@@ -9,6 +9,7 @@
 
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 
   <style>
@@ -36,6 +37,44 @@
       padding-bottom: 100px;
     }
 
+    /* ── Login screen ── */
+    #login-screen {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 32px;
+      z-index: 500;
+      text-align: center;
+    }
+    #login-screen .login-icon { font-size: 3.5rem; margin-bottom: 20px; }
+    #login-screen h1 { font-size: 2rem; font-weight: 800; letter-spacing: -0.04em; margin-bottom: 10px; }
+    #login-screen p { color: var(--muted); font-size: 0.95rem; line-height: 1.5; margin-bottom: 48px; max-width: 280px; }
+    .btn-google {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #fff;
+      color: #3c4043;
+      border: none;
+      border-radius: 14px;
+      padding: 16px 28px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      max-width: 300px;
+      justify-content: center;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+      transition: transform 0.1s, box-shadow 0.1s;
+    }
+    .btn-google:active { transform: scale(0.97); box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+    .btn-google svg { flex-shrink: 0; }
+    #login-screen.hidden { display: none; }
+
     /* ── Header ── */
     header {
       padding: 52px 20px 16px;
@@ -51,60 +90,36 @@
       justify-content: space-between;
       margin-bottom: 2px;
     }
-    header h1 {
-      font-size: 1.4rem;
-      font-weight: 700;
-      letter-spacing: -0.03em;
-    }
-    header p {
-      color: var(--muted);
-      font-size: 0.82rem;
-      margin-top: 2px;
-    }
+    header h1 { font-size: 1.4rem; font-weight: 700; letter-spacing: -0.03em; }
+    header p { color: var(--muted); font-size: 0.82rem; margin-top: 2px; }
 
-    /* ── Sync button ── */
-    .sync-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 0.72rem;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      padding: 6px 11px;
-      border-radius: 20px;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      color: var(--accent2);
-      cursor: pointer;
-      transition: background 0.15s;
-      font-family: 'SF Mono', 'Fira Code', ui-monospace, monospace;
-      white-space: nowrap;
-    }
-    .sync-btn:hover { background: var(--border); }
-    .sync-dot {
-      width: 7px;
-      height: 7px;
+    /* ── User avatar button ── */
+    .user-btn {
+      width: 36px;
+      height: 36px;
       border-radius: 50%;
-      background: var(--muted);
+      border: 2px solid var(--border);
+      background: var(--surface2);
+      cursor: pointer;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--accent2);
+      transition: border-color 0.15s;
       flex-shrink: 0;
-      transition: background 0.4s;
+      padding: 0;
     }
-    .sync-dot.connected { background: var(--success); }
+    .user-btn:hover { border-color: var(--accent); }
+    .user-btn img { width: 100%; height: 100%; object-fit: cover; }
 
     /* ── Goal list ── */
-    #goals-list {
-      padding: 16px 16px 0;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
+    #goals-list { padding: 16px 16px 0; display: flex; flex-direction: column; gap: 14px; }
 
     /* ── Empty state ── */
-    #empty-state {
-      text-align: center;
-      padding: 60px 24px;
-      color: var(--muted);
-    }
+    #empty-state { text-align: center; padding: 60px 24px; color: var(--muted); }
     #empty-state .icon { font-size: 3rem; margin-bottom: 12px; }
     #empty-state h2 { font-size: 1.1rem; color: var(--text); margin-bottom: 8px; }
     #empty-state p { font-size: 0.88rem; line-height: 1.5; }
@@ -127,487 +142,111 @@
       background: linear-gradient(135deg, rgba(34,197,94,0.06) 0%, transparent 60%);
       pointer-events: none;
     }
-
-    .card-header {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      margin-bottom: 14px;
-    }
-
+    .card-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 14px; }
     .card-title-wrap { flex: 1; min-width: 0; }
-    .card-title {
-      font-size: 1.05rem;
-      font-weight: 600;
-      letter-spacing: -0.02em;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .card-meta {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-top: 4px;
-    }
-    .badge {
-      display: inline-block;
-      font-size: 0.7rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      padding: 2px 8px;
-      border-radius: 20px;
-      background: var(--surface2);
-      color: var(--muted);
-      border: 1px solid var(--border);
-    }
+    .card-title { font-size: 1.05rem; font-weight: 600; letter-spacing: -0.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .card-meta { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+    .badge { display: inline-block; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; padding: 2px 8px; border-radius: 20px; background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
     .badge.period-badge { color: var(--accent2); border-color: rgba(167,139,250,0.3); }
     .days-left { font-size: 0.75rem; color: var(--muted); }
-
-    .card-menu-btn {
-      background: none;
-      border: none;
-      color: var(--muted);
-      cursor: pointer;
-      padding: 4px;
-      border-radius: 8px;
-      font-size: 1.1rem;
-      line-height: 1;
-      flex-shrink: 0;
-      transition: color 0.15s, background 0.15s;
-    }
+    .card-menu-btn { background: none; border: none; color: var(--muted); cursor: pointer; padding: 4px; border-radius: 8px; font-size: 1.1rem; line-height: 1; flex-shrink: 0; transition: color 0.15s, background 0.15s; }
     .card-menu-btn:hover { color: var(--text); background: var(--surface2); }
 
     /* ── Progress ── */
-    .progress-row {
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      margin-bottom: 8px;
-    }
-    .count-display {
-      font-size: 1.9rem;
-      font-weight: 800;
-      letter-spacing: -0.04em;
-      line-height: 1;
-      font-variant-numeric: tabular-nums;
-    }
+    .progress-row { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 8px; }
+    .count-display { font-size: 1.9rem; font-weight: 800; letter-spacing: -0.04em; line-height: 1; font-variant-numeric: tabular-nums; }
     .count-display .done { color: var(--accent2); }
     .count-display .sep { color: var(--muted); font-weight: 400; margin: 0 2px; font-size: 1.2rem; }
     .count-display .total { color: var(--muted); font-size: 1.2rem; }
-
-    .pct-label {
-      font-size: 0.78rem;
-      color: var(--muted);
-      font-weight: 600;
-    }
+    .pct-label { font-size: 0.78rem; color: var(--muted); font-weight: 600; }
     .pct-label.done-label { color: var(--success); }
-
-    .progress-bar-track {
-      width: 100%;
-      height: 6px;
-      background: var(--surface2);
-      border-radius: 10px;
-      overflow: hidden;
-      margin-bottom: 16px;
-    }
-    .progress-bar-fill {
-      height: 100%;
-      border-radius: 10px;
-      background: linear-gradient(90deg, var(--accent), var(--accent2));
-      transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
+    .progress-bar-track { width: 100%; height: 6px; background: var(--surface2); border-radius: 10px; overflow: hidden; margin-bottom: 16px; }
+    .progress-bar-fill { height: 100%; border-radius: 10px; background: linear-gradient(90deg, var(--accent), var(--accent2)); transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
     .progress-bar-fill.full { background: linear-gradient(90deg, var(--success), #4ade80); }
 
     /* ── Log controls ── */
-    .log-row {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-    }
-    .btn-plus {
-      flex-shrink: 0;
-      width: 52px;
-      height: 52px;
-      border-radius: 14px;
-      border: none;
-      background: var(--accent);
-      color: #fff;
-      font-size: 1.6rem;
-      font-weight: 300;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: transform 0.1s, background 0.15s;
-      -webkit-user-select: none;
-      user-select: none;
-    }
+    .log-row { display: flex; gap: 10px; align-items: center; }
+    .btn-plus { flex-shrink: 0; width: 52px; height: 52px; border-radius: 14px; border: none; background: var(--accent); color: #fff; font-size: 1.6rem; font-weight: 300; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.1s, background 0.15s; -webkit-user-select: none; user-select: none; }
     .btn-plus:active { transform: scale(0.92); background: #5a52e0; }
     .btn-plus.done-btn { background: var(--success); }
     .btn-plus.done-btn:active { background: #16a34a; }
-
-    .num-input-wrap {
-      flex: 1;
-      display: flex;
-      gap: 8px;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      overflow: hidden;
-      padding: 0 4px 0 12px;
-      align-items: center;
-    }
-    .num-input-wrap input {
-      flex: 1;
-      background: none;
-      border: none;
-      color: var(--text);
-      font-size: 1rem;
-      padding: 12px 0;
-      outline: none;
-      font-family: inherit;
-      width: 0;
-      min-width: 0;
-      font-variant-numeric: tabular-nums;
-    }
+    .num-input-wrap { flex: 1; display: flex; gap: 8px; background: var(--surface2); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; padding: 0 4px 0 12px; align-items: center; }
+    .num-input-wrap input { flex: 1; background: none; border: none; color: var(--text); font-size: 1rem; padding: 12px 0; outline: none; font-family: inherit; width: 0; min-width: 0; font-variant-numeric: tabular-nums; }
     .num-input-wrap input::placeholder { color: var(--muted); }
-    .btn-add {
-      flex-shrink: 0;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      color: var(--text);
-      font-size: 0.82rem;
-      font-weight: 600;
-      padding: 8px 14px;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: background 0.15s;
-      white-space: nowrap;
-    }
+    .btn-add { flex-shrink: 0; background: var(--surface); border: 1px solid var(--border); color: var(--text); font-size: 0.82rem; font-weight: 600; padding: 8px 14px; border-radius: 10px; cursor: pointer; transition: background 0.15s; white-space: nowrap; }
     .btn-add:active { background: var(--accent); border-color: var(--accent); }
 
     /* ── FAB ── */
-    #fab {
-      position: fixed;
-      bottom: 28px;
-      right: 20px;
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      border: none;
-      color: #fff;
-      font-size: 1.8rem;
-      font-weight: 300;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 8px 24px rgba(108,99,255,0.4);
-      transition: transform 0.15s;
-      z-index: 20;
-    }
+    #fab { position: fixed; bottom: 28px; right: 20px; width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent2)); border: none; color: #fff; font-size: 1.8rem; font-weight: 300; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 24px rgba(108,99,255,0.4); transition: transform 0.15s; z-index: 20; }
     #fab:active { transform: scale(0.92); }
 
     /* ── Modal ── */
-    .modal-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.7);
-      backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px);
-      z-index: 100;
-      display: flex;
-      align-items: flex-end;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.2s;
-    }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); z-index: 100; display: flex; align-items: flex-end; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
     .modal-overlay.open { opacity: 1; pointer-events: all; }
-
-    .modal {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 24px 24px 0 0;
-      padding: 28px 20px 40px;
-      width: 100%;
-      transform: translateY(100%);
-      transition: transform 0.3s cubic-bezier(0.34, 1.2, 0.64, 1);
-    }
+    .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 24px 24px 0 0; padding: 28px 20px 40px; width: 100%; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.34, 1.2, 0.64, 1); }
     .modal-overlay.open .modal { transform: translateY(0); }
-
-    .modal-handle {
-      width: 36px;
-      height: 4px;
-      border-radius: 2px;
-      background: var(--border);
-      margin: 0 auto 20px;
-    }
+    .modal-handle { width: 36px; height: 4px; border-radius: 2px; background: var(--border); margin: 0 auto 20px; }
     .modal h2 { font-size: 1.2rem; font-weight: 700; margin-bottom: 20px; }
-
     .field { margin-bottom: 16px; }
-    .field label {
-      display: block;
-      font-size: 0.78rem;
-      font-weight: 600;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-bottom: 8px;
-    }
-    .field input, .field select {
-      width: 100%;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      color: var(--text);
-      font-size: 1rem;
-      padding: 14px;
-      outline: none;
-      font-family: inherit;
-      appearance: none;
-      -webkit-appearance: none;
-      transition: border-color 0.15s;
-    }
-    .field input:focus, .field select:focus { border-color: var(--accent); }
+    .field label { display: block; font-size: 0.78rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+    .field input { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; color: var(--text); font-size: 1rem; padding: 14px; outline: none; font-family: inherit; appearance: none; -webkit-appearance: none; transition: border-color 0.15s; }
+    .field input:focus { border-color: var(--accent); }
     .field input::placeholder { color: var(--muted); }
-
-    .period-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 8px;
-    }
-    .period-btn {
-      padding: 12px 8px;
-      border-radius: 12px;
-      border: 2px solid var(--border);
-      background: var(--surface2);
-      color: var(--muted);
-      font-size: 0.9rem;
-      font-weight: 600;
-      cursor: pointer;
-      text-align: center;
-      transition: all 0.15s;
-    }
-    .period-btn.selected {
-      border-color: var(--accent);
-      color: var(--accent2);
-      background: rgba(108,99,255,0.1);
-    }
-
-    .modal-actions {
-      display: flex;
-      gap: 10px;
-      margin-top: 24px;
-    }
-    .btn-cancel {
-      flex: 1;
-      padding: 16px;
-      border-radius: 14px;
-      border: 1px solid var(--border);
-      background: var(--surface2);
-      color: var(--text);
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    .btn-save {
-      flex: 2;
-      padding: 16px;
-      border-radius: 14px;
-      border: none;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      color: #fff;
-      font-size: 1rem;
-      font-weight: 700;
-      cursor: pointer;
-      transition: opacity 0.15s;
-    }
+    .period-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+    .period-btn { padding: 12px 8px; border-radius: 12px; border: 2px solid var(--border); background: var(--surface2); color: var(--muted); font-size: 0.9rem; font-weight: 600; cursor: pointer; text-align: center; transition: all 0.15s; }
+    .period-btn.selected { border-color: var(--accent); color: var(--accent2); background: rgba(108,99,255,0.1); }
+    .modal-actions { display: flex; gap: 10px; margin-top: 24px; }
+    .btn-cancel { flex: 1; padding: 16px; border-radius: 14px; border: 1px solid var(--border); background: var(--surface2); color: var(--text); font-size: 1rem; font-weight: 600; cursor: pointer; }
+    .btn-save { flex: 2; padding: 16px; border-radius: 14px; border: none; background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; font-size: 1rem; font-weight: 700; cursor: pointer; transition: opacity 0.15s; }
     .btn-save:disabled { opacity: 0.4; }
 
-    /* ── Sync panel ── */
-    .sync-code-box {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 20px;
-      text-align: center;
-      margin-bottom: 8px;
-    }
-    .sync-code-box .sc-label {
-      font-size: 0.72rem;
-      font-weight: 600;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-bottom: 10px;
-    }
-    .sync-code-box .sc-code {
-      font-size: 2.4rem;
-      font-weight: 800;
-      letter-spacing: 0.18em;
-      color: var(--accent2);
-      font-family: 'SF Mono', 'Fira Code', ui-monospace, monospace;
-    }
-    .btn-copy {
-      margin-top: 12px;
-      padding: 8px 20px;
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      background: var(--surface);
-      color: var(--text);
-      font-size: 0.82rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.15s;
-    }
-    .btn-copy:active { background: var(--accent); border-color: var(--accent); }
-
-    .sync-divider {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin: 20px 0;
-      color: var(--muted);
-      font-size: 0.75rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-    .sync-divider::before, .sync-divider::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: var(--border);
-    }
-
-    .sync-input-row {
-      display: flex;
-      gap: 10px;
-    }
-    .sync-input-row input {
-      flex: 1;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      color: var(--text);
-      font-size: 1.2rem;
-      font-weight: 700;
-      letter-spacing: 0.12em;
-      padding: 14px;
-      outline: none;
-      font-family: 'SF Mono', 'Fira Code', ui-monospace, monospace;
-      text-transform: uppercase;
-      transition: border-color 0.15s;
-    }
-    .sync-input-row input:focus { border-color: var(--accent); }
-    .sync-input-row input::placeholder {
-      font-size: 0.85rem;
-      font-weight: 400;
-      letter-spacing: 0;
-      color: var(--muted);
-      font-family: inherit;
-    }
-    .btn-link {
-      padding: 14px 18px;
-      border-radius: 12px;
-      border: none;
-      background: var(--accent);
-      color: #fff;
-      font-size: 0.9rem;
-      font-weight: 700;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: opacity 0.15s;
-    }
-    .btn-link:disabled { opacity: 0.35; cursor: default; }
-    .sync-warning {
-      font-size: 0.76rem;
-      color: var(--muted);
-      margin-top: 10px;
-      line-height: 1.45;
-    }
-    .sync-status-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 0.8rem;
-      color: var(--muted);
-      margin-bottom: 16px;
-    }
+    /* ── User menu ── */
+    #user-menu { position: fixed; top: 60px; right: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 6px; min-width: 200px; z-index: 200; box-shadow: 0 12px 40px rgba(0,0,0,0.5); opacity: 0; pointer-events: none; transform: scale(0.92) translateY(-8px); transform-origin: top right; transition: opacity 0.15s, transform 0.15s; }
+    #user-menu.open { opacity: 1; pointer-events: all; transform: scale(1) translateY(0); }
+    .user-menu-name { padding: 10px 14px 6px; font-size: 0.8rem; color: var(--muted); font-weight: 600; border-bottom: 1px solid var(--border); margin-bottom: 4px; }
+    .user-menu-item { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 10px; cursor: pointer; font-size: 0.9rem; transition: background 0.1s; }
+    .user-menu-item:hover { background: var(--surface2); }
+    .user-menu-item.danger { color: #f87171; }
 
     /* ── Context menu ── */
-    .ctx-menu {
-      position: fixed;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 6px;
-      min-width: 160px;
-      z-index: 200;
-      box-shadow: 0 12px 40px rgba(0,0,0,0.5);
-      opacity: 0;
-      pointer-events: none;
-      transform: scale(0.92);
-      transform-origin: top right;
-      transition: opacity 0.15s, transform 0.15s;
-    }
+    .ctx-menu { position: fixed; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 6px; min-width: 160px; z-index: 200; box-shadow: 0 12px 40px rgba(0,0,0,0.5); opacity: 0; pointer-events: none; transform: scale(0.92); transform-origin: top right; transition: opacity 0.15s, transform 0.15s; }
     .ctx-menu.open { opacity: 1; pointer-events: all; transform: scale(1); }
-    .ctx-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 12px 14px;
-      border-radius: 10px;
-      cursor: pointer;
-      font-size: 0.9rem;
-      transition: background 0.1s;
-    }
+    .ctx-item { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 10px; cursor: pointer; font-size: 0.9rem; transition: background 0.1s; }
     .ctx-item:hover { background: var(--surface2); }
     .ctx-item.danger { color: #f87171; }
 
     /* ── Toast ── */
-    #toast {
-      position: fixed;
-      bottom: 104px;
-      left: 50%;
-      transform: translateX(-50%) translateY(20px);
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 40px;
-      padding: 10px 20px;
-      font-size: 0.88rem;
-      font-weight: 500;
-      white-space: nowrap;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.2s, transform 0.2s;
-      z-index: 300;
-    }
-    #toast.show {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
-    }
+    #toast { position: fixed; bottom: 104px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--surface); border: 1px solid var(--border); border-radius: 40px; padding: 10px 20px; font-size: 0.88rem; font-weight: 500; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.2s, transform 0.2s; z-index: 300; }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
     /* ── Celebration ── */
-    @keyframes pop {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.04); }
-      100% { transform: scale(1); }
-    }
+    @keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.04); } 100% { transform: scale(1); } }
     .card.pop { animation: pop 0.3s ease; }
   </style>
 </head>
 <body>
 
+  <!-- Login screen -->
+  <div id="login-screen">
+    <div class="login-icon">🎯</div>
+    <h1>Tick Them Off</h1>
+    <p>Track your goals across all your devices. Sign in to get started.</p>
+    <button class="btn-google" id="btn-google-signin">
+      <svg width="20" height="20" viewBox="0 0 48 48">
+        <path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 7.9 3l5.7-5.7C34.1 6.5 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.6-.4-3.9z"/>
+        <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.5 15.8 19 12 24 12c3.1 0 5.8 1.1 7.9 3l5.7-5.7C34.1 6.5 29.3 4 24 4 16.3 4 9.6 8.3 6.3 14.7z"/>
+        <path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.5 26.7 36 24 36c-5.2 0-9.7-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/>
+        <path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.3-2.4 4.3-4.4 5.6l6.2 5.2C36.9 36.2 44 31 44 24c0-1.3-.1-2.6-.4-3.9z"/>
+      </svg>
+      Continue with Google
+    </button>
+  </div>
+
   <header>
     <div class="header-row">
       <h1>Tick Them Off</h1>
-      <button class="sync-btn" id="sync-btn" aria-label="Sync settings">
-        <span class="sync-dot" id="sync-dot"></span>
-        <span id="sync-code-label">······</span>
+      <button class="user-btn" id="user-btn" aria-label="Account">
+        <span id="user-initials"></span>
       </button>
     </div>
     <p id="header-sub">Track your goals, one rep at a time.</p>
@@ -655,41 +294,10 @@
     </div>
   </div>
 
-  <!-- Sync modal -->
-  <div class="modal-overlay" id="sync-overlay">
-    <div class="modal" role="dialog" aria-modal="true">
-      <div class="modal-handle"></div>
-      <h2>Sync Between Devices</h2>
-
-      <div class="sync-status-row">
-        <span class="sync-dot" id="sync-dot-panel"></span>
-        <span id="sync-status-text">Connecting…</span>
-      </div>
-
-      <div class="sync-code-box">
-        <div class="sc-label">Your sync code</div>
-        <div class="sc-code" id="sync-code-big">······</div>
-        <button class="btn-copy" id="btn-copy-code">Copy code</button>
-      </div>
-      <p style="font-size:0.78rem;color:var(--muted);line-height:1.45;margin-bottom:4px;">
-        Enter this code on another device to share your goals in real time.
-      </p>
-
-      <div class="sync-divider">link another device</div>
-
-      <div class="field">
-        <label>Enter a code from another device</label>
-        <div class="sync-input-row">
-          <input type="text" id="inp-sync-code" placeholder="e.g. ABC123" maxlength="6" autocomplete="off" />
-          <button class="btn-link" id="btn-link-code" disabled>Link</button>
-        </div>
-        <p class="sync-warning">⚠️ Linking will replace your data on this device with the other device's data.</p>
-      </div>
-
-      <div class="modal-actions">
-        <button class="btn-cancel" id="sync-close">Done</button>
-      </div>
-    </div>
+  <!-- User menu dropdown -->
+  <div id="user-menu">
+    <div class="user-menu-name" id="user-menu-name">Signed in</div>
+    <div class="user-menu-item danger" id="btn-signout">🚪 &nbsp;Sign out</div>
   </div>
 
   <!-- Context menu -->
@@ -703,8 +311,7 @@
   <div id="toast"></div>
 
 <script>
-  // ── Firebase Config ─────────────────────────────────────────────────────────
-  // PASTE YOUR FIREBASE CONFIG HERE ↓
+  // ── Firebase ────────────────────────────────────────────────────────────────
   const firebaseConfig = {
     apiKey:            "AIzaSyCZjm-OIf61a8JslGlm67TidLFotsLWH9s",
     authDomain:        "tick-them-off.firebaseapp.com",
@@ -715,100 +322,99 @@
     appId:             "1:872412413543:web:5303edc42d1aafd6935ec2"
   };
 
-  let db = null;
-  let firebaseReady = false;
-  try {
-    if (!firebaseConfig.apiKey.startsWith('PASTE')) {
-      firebase.initializeApp(firebaseConfig);
-      db = firebase.database();
-      firebaseReady = true;
-    }
-  } catch(e) {
-    console.warn('Firebase init failed, using localStorage only:', e);
-  }
-
-  // ── Sync code ──────────────────────────────────────────────────────────────
-  const SYNC_CODE_KEY = 'tickthemoff_synccode';
-  const STORAGE_KEY   = 'tickthemoff_v1';
-
-  function generateCode() {
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-    return Array.from({length: 6}, () => chars[Math.floor(Math.random() * chars.length)]).join('');
-  }
-
-  let syncCode = localStorage.getItem(SYNC_CODE_KEY);
-  if (!syncCode) {
-    syncCode = generateCode();
-    localStorage.setItem(SYNC_CODE_KEY, syncCode);
-  }
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db   = firebase.database();
 
   // ── State ──────────────────────────────────────────────────────────────────
-  // Seed from local cache immediately so UI isn't blank while Firebase loads
+  const STORAGE_KEY = 'tickthemoff_v1';
   let goals = [];
-  try { goals = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch(e) { goals = []; }
+  let currentUser = null;
 
-  // ── Sync helpers ───────────────────────────────────────────────────────────
-  function setSyncDot(state) { // 'offline' | 'connected'
-    ['sync-dot', 'sync-dot-panel'].forEach(id => {
-      const el = document.getElementById(id);
-      if (!el) return;
-      el.className = 'sync-dot' + (state === 'connected' ? ' connected' : '');
+  // ── Auth ───────────────────────────────────────────────────────────────────
+  const loginScreen = document.getElementById('login-screen');
+
+  document.getElementById('btn-google-signin').addEventListener('click', function() {
+    var provider = new firebase.auth.GoogleAuthProvider();
+    auth.signInWithPopup(provider).catch(function(err) {
+      console.error('Sign-in error:', err);
+      toast('Sign-in failed. Please try again.');
     });
-    const txt = document.getElementById('sync-status-text');
-    if (txt) txt.textContent = state === 'connected' ? 'Synced' : 'Offline — changes saved locally';
-  }
+  });
 
-  function updateSyncUI() {
-    document.getElementById('sync-code-label').textContent = syncCode;
-    document.getElementById('sync-code-big').textContent   = syncCode;
-  }
-
-  // Read once from Firebase on load, fall back to localStorage
-  function initFirebaseListener() {
-    if (!firebaseReady) {
-      setSyncDot('offline');
+  auth.onAuthStateChanged(function(user) {
+    currentUser = user;
+    if (user) {
+      loginScreen.classList.add('hidden');
+      var userBtn = document.getElementById('user-btn');
+      if (user.photoURL) {
+        userBtn.innerHTML = '<img src="' + user.photoURL + '" alt="" />';
+      } else {
+        document.getElementById('user-initials').textContent = (user.displayName || user.email || '?')[0].toUpperCase();
+      }
+      document.getElementById('user-menu-name').textContent = user.displayName || user.email || 'Signed in';
+      loadFromFirebase();
+    } else {
+      loginScreen.classList.remove('hidden');
+      goals = [];
       render();
-      return;
     }
-    db.ref('users/' + syncCode + '/goals').once('value')
-      .then(snapshot => {
-        const data = snapshot.val();
+  });
+
+  document.getElementById('btn-signout').addEventListener('click', function() {
+    auth.signOut();
+    closeUserMenu();
+  });
+
+  // ── User menu ──────────────────────────────────────────────────────────────
+  function closeUserMenu() {
+    document.getElementById('user-menu').classList.remove('open');
+  }
+
+  document.getElementById('user-btn').addEventListener('click', function(e) {
+    e.stopPropagation();
+    document.getElementById('user-menu').classList.toggle('open');
+  });
+
+  // ── Storage ────────────────────────────────────────────────────────────────
+  function loadFromFirebase() {
+    if (!currentUser) return;
+    db.ref('users/' + currentUser.uid + '/goals').once('value')
+      .then(function(snapshot) {
+        var data = snapshot.val();
         if (Array.isArray(data) && data.length > 0) {
           goals = data;
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(goals));
         } else if (data && typeof data === 'object') {
           goals = Object.values(data);
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(goals));
+        } else {
+          try { goals = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch(e) { goals = []; }
         }
-        setSyncDot('connected');
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(goals));
         render();
       })
-      .catch(err => {
-        console.error('Firebase read error:', err);
-        setSyncDot('offline');
+      .catch(function(err) {
+        console.error('Firebase load error:', err);
+        try { goals = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch(e) { goals = []; }
         render();
       });
   }
 
-  // ── Storage ────────────────────────────────────────────────────────────────
   function save(goalsToSave) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(goalsToSave));
-    if (firebaseReady && db) {
-      setSyncDot('syncing');
-      db.ref('users/' + syncCode + '/goals').set(goalsToSave)
-        .then(() => setSyncDot('connected'))
-        .catch(err => { console.error(err); setSyncDot('offline'); });
+    if (currentUser) {
+      db.ref('users/' + currentUser.uid + '/goals').set(goalsToSave)
+        .catch(function(err) { console.error('Firebase save error:', err); });
     }
   }
 
   // ── Period logic ───────────────────────────────────────────────────────────
   function periodStart(period) {
-    const now = new Date();
+    var now = new Date();
     if (period === 'daily') {
       return new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
     } else if (period === 'weekly') {
-      const day = now.getDay();
-      const monday = new Date(now);
+      var day = now.getDay();
+      var monday = new Date(now);
       monday.setDate(now.getDate() - ((day + 6) % 7));
       monday.setHours(0, 0, 0, 0);
       return monday.getTime();
@@ -818,15 +424,15 @@
   }
 
   function periodEnd(period, start) {
-    const s = new Date(start);
+    var s = new Date(start);
     if (period === 'daily')  return new Date(s.getFullYear(), s.getMonth(), s.getDate() + 1).getTime();
     if (period === 'weekly') return new Date(s.getFullYear(), s.getMonth(), s.getDate() + 7).getTime();
     return new Date(s.getFullYear(), s.getMonth() + 1, 1).getTime();
   }
 
   function daysLeft(period, start) {
-    const end  = periodEnd(period, start);
-    const days = Math.ceil((end - Date.now()) / 86400000);
+    var end  = periodEnd(period, start);
+    var days = Math.ceil((end - Date.now()) / 86400000);
     if (days <= 0) return 'ends today';
     if (days === 1) return '1 day left';
     return days + ' days left';
@@ -837,7 +443,7 @@
   }
 
   function checkReset(goal) {
-    const current = periodStart(goal.period);
+    var current = periodStart(goal.period);
     if (!goal.periodStart || goal.periodStart < current) {
       goal.periodStart = current;
       goal.progress = 0;
@@ -845,9 +451,9 @@
   }
 
   function checkAllResets() {
-    let changed = false;
-    goals.forEach(g => {
-      const prev = g.progress;
+    var changed = false;
+    goals.forEach(function(g) {
+      var prev = g.progress;
       checkReset(g);
       if (g.progress !== prev) changed = true;
     });
@@ -857,9 +463,9 @@
   // ── Render ─────────────────────────────────────────────────────────────────
   function render() {
     checkAllResets();
-    const list  = document.getElementById('goals-list');
-    const empty = document.getElementById('empty-state');
-    const sub   = document.getElementById('header-sub');
+    var list  = document.getElementById('goals-list');
+    var empty = document.getElementById('empty-state');
+    var sub   = document.getElementById('header-sub');
 
     list.innerHTML = '';
 
@@ -870,94 +476,90 @@
     }
 
     empty.style.display = 'none';
-    const done = goals.filter(g => g.progress >= g.target).length;
+    var done = goals.filter(function(g) { return g.progress >= g.target; }).length;
     sub.textContent = done === goals.length
       ? 'All ' + goals.length + ' goals complete! 🎉'
       : done + ' of ' + goals.length + ' goals complete';
 
-    goals.forEach(g => {
-      const pct      = Math.min(100, Math.round((g.progress / g.target) * 100));
-      const complete = g.progress >= g.target;
+    goals.forEach(function(g) {
+      var pct      = Math.min(100, Math.round((g.progress / g.target) * 100));
+      var complete = g.progress >= g.target;
 
-      const card = document.createElement('div');
-      card.className   = 'card' + (complete ? ' complete' : '');
-      card.dataset.id  = g.id;
+      var card = document.createElement('div');
+      card.className  = 'card' + (complete ? ' complete' : '');
+      card.dataset.id = g.id;
 
-      card.innerHTML = `
-        <div class="card-header">
-          <div class="card-title-wrap">
-            <div class="card-title">${esc(g.name)}</div>
-            <div class="card-meta">
-              <span class="badge period-badge">${periodLabel(g.period)}</span>
-              <span class="days-left">${daysLeft(g.period, g.periodStart)}</span>
-            </div>
-          </div>
-          <button class="card-menu-btn" data-id="${g.id}" aria-label="Options">···</button>
-        </div>
-
-        <div class="progress-row">
-          <div class="count-display">
-            <span class="done">${g.progress}</span><span class="sep">/</span><span class="total">${g.target}</span>
-          </div>
-          <div class="pct-label ${complete ? 'done-label' : ''}">${complete ? '✓ Done!' : pct + '%'}</div>
-        </div>
-        <div class="progress-bar-track">
-          <div class="progress-bar-fill ${complete ? 'full' : ''}" style="width:${pct}%"></div>
-        </div>
-
-        <div class="log-row">
-          <button class="btn-plus ${complete ? 'done-btn' : ''}" data-id="${g.id}" aria-label="Add one">+</button>
-          <div class="num-input-wrap">
-            <input type="number" min="1" placeholder="Enter amount…" inputmode="numeric"
-              data-id="${g.id}" class="num-input" />
-            <button class="btn-add" data-id="${g.id}">Add</button>
-          </div>
-        </div>
-      `;
+      card.innerHTML =
+        '<div class="card-header">' +
+          '<div class="card-title-wrap">' +
+            '<div class="card-title">' + esc(g.name) + '</div>' +
+            '<div class="card-meta">' +
+              '<span class="badge period-badge">' + periodLabel(g.period) + '</span>' +
+              '<span class="days-left">' + daysLeft(g.period, g.periodStart) + '</span>' +
+            '</div>' +
+          '</div>' +
+          '<button class="card-menu-btn" data-id="' + g.id + '" aria-label="Options">\u00B7\u00B7\u00B7</button>' +
+        '</div>' +
+        '<div class="progress-row">' +
+          '<div class="count-display">' +
+            '<span class="done">' + g.progress + '</span><span class="sep">/</span><span class="total">' + g.target + '</span>' +
+          '</div>' +
+          '<div class="pct-label' + (complete ? ' done-label' : '') + '">' + (complete ? '&#10003; Done!' : pct + '%') + '</div>' +
+        '</div>' +
+        '<div class="progress-bar-track">' +
+          '<div class="progress-bar-fill' + (complete ? ' full' : '') + '" style="width:' + pct + '%"></div>' +
+        '</div>' +
+        '<div class="log-row">' +
+          '<button class="btn-plus' + (complete ? ' done-btn' : '') + '" data-id="' + g.id + '" aria-label="Add one">+</button>' +
+          '<div class="num-input-wrap">' +
+            '<input type="number" min="1" placeholder="Enter amount\u2026" inputmode="numeric" data-id="' + g.id + '" class="num-input" />' +
+            '<button class="btn-add" data-id="' + g.id + '">Add</button>' +
+          '</div>' +
+        '</div>';
 
       list.appendChild(card);
     });
 
-    document.querySelectorAll('.btn-plus').forEach(btn => {
-      btn.addEventListener('click', () => addProgress(btn.dataset.id, 1));
+    document.querySelectorAll('.btn-plus').forEach(function(btn) {
+      btn.addEventListener('click', function() { addProgress(btn.dataset.id, 1); });
     });
-    document.querySelectorAll('.btn-add').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const inp = document.querySelector('.num-input[data-id="' + btn.dataset.id + '"]');
-        const val = parseInt(inp.value, 10);
+    document.querySelectorAll('.btn-add').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var inp = document.querySelector('.num-input[data-id="' + btn.dataset.id + '"]');
+        var val = parseInt(inp.value, 10);
         if (val > 0) { addProgress(btn.dataset.id, val); inp.value = ''; }
       });
     });
-    document.querySelectorAll('.num-input').forEach(inp => {
-      inp.addEventListener('keydown', e => {
+    document.querySelectorAll('.num-input').forEach(function(inp) {
+      inp.addEventListener('keydown', function(e) {
         if (e.key === 'Enter') {
-          const val = parseInt(inp.value, 10);
+          var val = parseInt(inp.value, 10);
           if (val > 0) { addProgress(inp.dataset.id, val); inp.value = ''; }
         }
       });
     });
-    document.querySelectorAll('.card-menu-btn').forEach(btn => {
-      btn.addEventListener('click', e => openCtxMenu(e, btn.dataset.id));
+    document.querySelectorAll('.card-menu-btn').forEach(function(btn) {
+      btn.addEventListener('click', function(e) { openCtxMenu(e, btn.dataset.id); });
     });
   }
 
   // ── Progress ───────────────────────────────────────────────────────────────
   function addProgress(id, amount) {
-    const g = goals.find(x => x.id === id);
+    var g = goals.find(function(x) { return x.id === id; });
     if (!g) return;
     checkReset(g);
-    const wasComplete = g.progress >= g.target;
+    var wasComplete = g.progress >= g.target;
     g.progress = Math.max(0, g.progress + amount);
     save(goals);
 
-    const card = document.querySelector('.card[data-id="' + id + '"]');
+    var card = document.querySelector('.card[data-id="' + id + '"]');
     if (card) card.classList.add('pop');
-    setTimeout(() => card && card.classList.remove('pop'), 300);
+    setTimeout(function() { if (card) card.classList.remove('pop'); }, 300);
 
     if (!wasComplete && g.progress >= g.target) {
       toast('🎉 "' + g.name + '" complete!');
     } else {
-      const remaining = Math.max(0, g.target - g.progress);
+      var remaining = Math.max(0, g.target - g.progress);
       if (remaining > 0) toast('+' + amount + ' — ' + remaining + ' to go');
     }
 
@@ -965,18 +567,18 @@
   }
 
   // ── Goal modal ─────────────────────────────────────────────────────────────
-  let editingId = null;
-  let selectedPeriod = 'weekly';
+  var editingId = null;
+  var selectedPeriod = 'weekly';
 
-  function openModal(id = null) {
-    editingId = id;
-    const overlay   = document.getElementById('modal-overlay');
-    const title     = document.getElementById('modal-title');
-    const nameInp   = document.getElementById('inp-name');
-    const targetInp = document.getElementById('inp-target');
+  function openModal(id) {
+    editingId = id || null;
+    var overlay   = document.getElementById('modal-overlay');
+    var title     = document.getElementById('modal-title');
+    var nameInp   = document.getElementById('inp-name');
+    var targetInp = document.getElementById('inp-target');
 
     if (id) {
-      const g = goals.find(x => x.id === id);
+      var g = goals.find(function(x) { return x.id === id; });
       title.textContent  = 'Edit Goal';
       nameInp.value      = g.name;
       targetInp.value    = g.target;
@@ -991,7 +593,7 @@
     updatePeriodBtns();
     validateModal();
     overlay.classList.add('open');
-    setTimeout(() => nameInp.focus(), 300);
+    setTimeout(function() { nameInp.focus(); }, 300);
   }
 
   function closeModal() {
@@ -1000,25 +602,25 @@
   }
 
   function updatePeriodBtns() {
-    document.querySelectorAll('.period-btn').forEach(btn => {
+    document.querySelectorAll('.period-btn').forEach(function(btn) {
       btn.classList.toggle('selected', btn.dataset.period === selectedPeriod);
     });
   }
 
   function validateModal() {
-    const name   = document.getElementById('inp-name').value.trim();
-    const target = parseInt(document.getElementById('inp-target').value, 10);
+    var name   = document.getElementById('inp-name').value.trim();
+    var target = parseInt(document.getElementById('inp-target').value, 10);
     document.getElementById('modal-save').disabled = !(name && target > 0);
   }
 
-  document.getElementById('fab').addEventListener('click', () => openModal());
+  document.getElementById('fab').addEventListener('click', function() { openModal(); });
   document.getElementById('modal-cancel').addEventListener('click', closeModal);
-  document.getElementById('modal-overlay').addEventListener('click', e => {
+  document.getElementById('modal-overlay').addEventListener('click', function(e) {
     if (e.target === document.getElementById('modal-overlay')) closeModal();
   });
 
-  document.querySelectorAll('.period-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
+  document.querySelectorAll('.period-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
       selectedPeriod = btn.dataset.period;
       updatePeriodBtns();
     });
@@ -1027,13 +629,13 @@
   document.getElementById('inp-name').addEventListener('input', validateModal);
   document.getElementById('inp-target').addEventListener('input', validateModal);
 
-  document.getElementById('modal-save').addEventListener('click', () => {
-    const name   = document.getElementById('inp-name').value.trim();
-    const target = parseInt(document.getElementById('inp-target').value, 10);
+  document.getElementById('modal-save').addEventListener('click', function() {
+    var name   = document.getElementById('inp-name').value.trim();
+    var target = parseInt(document.getElementById('inp-target').value, 10);
     if (!name || !(target > 0)) return;
 
     if (editingId) {
-      const g = goals.find(x => x.id === editingId);
+      var g = goals.find(function(x) { return x.id === editingId; });
       g.name = name;
       if (g.target !== target) { g.target = target; }
       if (g.period !== selectedPeriod) {
@@ -1044,12 +646,12 @@
     } else {
       goals.push({
         id:          crypto.randomUUID(),
-        name,
-        target,
+        name:        name,
+        target:      target,
         period:      selectedPeriod,
         periodStart: periodStart(selectedPeriod),
         progress:    0,
-        createdAt:   Date.now(),
+        createdAt:   Date.now()
       });
     }
 
@@ -1058,56 +660,14 @@
     render();
   });
 
-  // ── Sync panel ─────────────────────────────────────────────────────────────
-  document.getElementById('sync-btn').addEventListener('click', () => {
-    document.getElementById('sync-overlay').classList.add('open');
-  });
-  document.getElementById('sync-close').addEventListener('click', () => {
-    document.getElementById('sync-overlay').classList.remove('open');
-  });
-  document.getElementById('sync-overlay').addEventListener('click', e => {
-    if (e.target === document.getElementById('sync-overlay'))
-      document.getElementById('sync-overlay').classList.remove('open');
-  });
-
-  document.getElementById('btn-copy-code').addEventListener('click', () => {
-    navigator.clipboard.writeText(syncCode)
-      .then(() => toast('Code copied! 📋'))
-      .catch(() => toast(syncCode)); // fallback: just show it in toast
-  });
-
-  const syncInput = document.getElementById('inp-sync-code');
-  const linkBtn   = document.getElementById('btn-link-code');
-
-  syncInput.addEventListener('input', () => {
-    syncInput.value = syncInput.value.toUpperCase();
-    linkBtn.disabled = syncInput.value.trim().length !== 6;
-  });
-
-  linkBtn.addEventListener('click', () => {
-    const code = syncInput.value.trim().toUpperCase();
-    if (code.length !== 6) return;
-    if (code === syncCode) { toast("That's already your code!"); return; }
-    if (confirm('Link to code "' + code + '"?\n\nYour current data on this device will be replaced with the other device\'s data.')) {
-      syncCode = code;
-      localStorage.setItem(SYNC_CODE_KEY, syncCode);
-      updateSyncUI();
-      initFirebaseListener();
-      document.getElementById('sync-overlay').classList.remove('open');
-      syncInput.value  = '';
-      linkBtn.disabled = true;
-      toast('Linked! Loading shared data…');
-    }
-  });
-
   // ── Context menu ───────────────────────────────────────────────────────────
-  let ctxId = null;
+  var ctxId = null;
 
   function openCtxMenu(e, id) {
     e.stopPropagation();
     ctxId = id;
-    const menu = document.getElementById('ctx-menu');
-    const rect = e.currentTarget.getBoundingClientRect();
+    var menu = document.getElementById('ctx-menu');
+    var rect = e.currentTarget.getBoundingClientRect();
     menu.style.top   = (rect.bottom + 6) + 'px';
     menu.style.right = (window.innerWidth - rect.right) + 'px';
     menu.classList.add('open');
@@ -1118,15 +678,15 @@
     ctxId = null;
   }
 
-  document.addEventListener('click', closeCtxMenu);
+  document.addEventListener('click', function() { closeCtxMenu(); closeUserMenu(); });
 
-  document.getElementById('ctx-edit').addEventListener('click', () => {
+  document.getElementById('ctx-edit').addEventListener('click', function() {
     if (ctxId) openModal(ctxId);
   });
 
-  document.getElementById('ctx-reset').addEventListener('click', () => {
+  document.getElementById('ctx-reset').addEventListener('click', function() {
     if (!ctxId) return;
-    const g = goals.find(x => x.id === ctxId);
+    var g = goals.find(function(x) { return x.id === ctxId; });
     if (!g) return;
     g.progress    = 0;
     g.periodStart = periodStart(g.period);
@@ -1135,25 +695,25 @@
     toast('Progress reset');
   });
 
-  document.getElementById('ctx-delete').addEventListener('click', () => {
+  document.getElementById('ctx-delete').addEventListener('click', function() {
     if (!ctxId) return;
-    const g = goals.find(x => x.id === ctxId);
+    var g = goals.find(function(x) { return x.id === ctxId; });
     if (!g) return;
     if (confirm('Delete "' + g.name + '"?')) {
-      goals = goals.filter(x => x.id !== ctxId);
+      goals = goals.filter(function(x) { return x.id !== ctxId; });
       save(goals);
       render();
     }
   });
 
   // ── Toast ──────────────────────────────────────────────────────────────────
-  let toastTimer;
+  var toastTimer;
   function toast(msg) {
-    const el = document.getElementById('toast');
+    var el = document.getElementById('toast');
     el.textContent = msg;
     el.classList.add('show');
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
+    toastTimer = setTimeout(function() { el.classList.remove('show'); }, 2200);
   }
 
   // ── Helpers ────────────────────────────────────────────────────────────────
@@ -1162,11 +722,7 @@
   }
 
   // ── Init ───────────────────────────────────────────────────────────────────
-  updateSyncUI();
-  initFirebaseListener();
-
-  // Refresh every minute for period resets / days-left counter
-  setInterval(() => render(), 60000);
+  setInterval(function() { render(); }, 60000);
 </script>
 </body>
 </html>
