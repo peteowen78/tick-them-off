@@ -89,9 +89,7 @@
       flex-shrink: 0;
       transition: background 0.4s;
     }
-    .sync-dot.connected  { background: var(--success); }
-    .sync-dot.syncing    { background: var(--accent2); animation: blink 0.8s infinite; }
-    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+    .sync-dot.connected { background: var(--success); }
 
     /* ── Goal list ── */
     #goals-list {
@@ -749,19 +747,15 @@
   let goals = [];
   try { goals = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { goals = []; }
 
-  let dbRef = null;
-
   // ── Sync helpers ───────────────────────────────────────────────────────────
-  function setSyncDot(state) { // 'offline' | 'syncing' | 'connected'
+  function setSyncDot(state) { // 'offline' | 'connected'
     ['sync-dot', 'sync-dot-panel'].forEach(id => {
       const el = document.getElementById(id);
       if (!el) return;
-      el.className = 'sync-dot' + (state === 'connected' ? ' connected' : state === 'syncing' ? ' syncing' : '');
+      el.className = 'sync-dot' + (state === 'connected' ? ' connected' : '');
     });
     const txt = document.getElementById('sync-status-text');
-    if (txt) txt.textContent =
-      state === 'connected' ? 'Synced' :
-      state === 'syncing'   ? 'Syncing…' : 'Offline — changes saved locally';
+    if (txt) txt.textContent = state === 'connected' ? 'Synced' : 'Offline — changes saved locally';
   }
 
   function updateSyncUI() {
@@ -769,34 +763,31 @@
     document.getElementById('sync-code-big').textContent   = syncCode;
   }
 
+  // Read once from Firebase on load, fall back to localStorage
   function initFirebaseListener() {
     if (!firebaseReady) {
       setSyncDot('offline');
       render();
       return;
     }
-    if (dbRef) { dbRef.off(); dbRef = null; }
-
-    setSyncDot('syncing');
-    dbRef = db.ref('users/' + syncCode + '/goals');
-
-    dbRef.on('value', snapshot => {
-      const data = snapshot.val();
-      if (Array.isArray(data)) {
-        goals = data;
-      } else if (data && typeof data === 'object') {
-        goals = Object.values(data);
-      } else {
-        goals = [];
-      }
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(goals));
-      setSyncDot('connected');
-      render();
-    }, err => {
-      console.error('Firebase read error:', err);
-      setSyncDot('offline');
-      render();
-    });
+    db.ref('users/' + syncCode + '/goals').once('value')
+      .then(snapshot => {
+        const data = snapshot.val();
+        if (Array.isArray(data) && data.length > 0) {
+          goals = data;
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(goals));
+        } else if (data && typeof data === 'object') {
+          goals = Object.values(data);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(goals));
+        }
+        setSyncDot('connected');
+        render();
+      })
+      .catch(err => {
+        console.error('Firebase read error:', err);
+        setSyncDot('offline');
+        render();
+      });
   }
 
   // ── Storage ────────────────────────────────────────────────────────────────
