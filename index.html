@@ -6,6 +6,11 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Tick Them Off</title>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
   <style>
     :root {
       --bg: #0f0f13;
@@ -40,6 +45,12 @@
       z-index: 10;
       border-bottom: 1px solid var(--border);
     }
+    .header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2px;
+    }
     header h1 {
       font-size: 1.4rem;
       font-weight: 700;
@@ -50,6 +61,37 @@
       font-size: 0.82rem;
       margin-top: 2px;
     }
+
+    /* ── Sync button ── */
+    .sync-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      padding: 6px 11px;
+      border-radius: 20px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--accent2);
+      cursor: pointer;
+      transition: background 0.15s;
+      font-family: 'SF Mono', 'Fira Code', ui-monospace, monospace;
+      white-space: nowrap;
+    }
+    .sync-btn:hover { background: var(--border); }
+    .sync-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--muted);
+      flex-shrink: 0;
+      transition: background 0.4s;
+    }
+    .sync-dot.connected  { background: var(--success); }
+    .sync-dot.syncing    { background: var(--accent2); animation: blink 0.8s infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
 
     /* ── Goal list ── */
     #goals-list {
@@ -387,6 +429,117 @@
     }
     .btn-save:disabled { opacity: 0.4; }
 
+    /* ── Sync panel ── */
+    .sync-code-box {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+    .sync-code-box .sc-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 10px;
+    }
+    .sync-code-box .sc-code {
+      font-size: 2.4rem;
+      font-weight: 800;
+      letter-spacing: 0.18em;
+      color: var(--accent2);
+      font-family: 'SF Mono', 'Fira Code', ui-monospace, monospace;
+    }
+    .btn-copy {
+      margin-top: 12px;
+      padding: 8px 20px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-copy:active { background: var(--accent); border-color: var(--accent); }
+
+    .sync-divider {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 20px 0;
+      color: var(--muted);
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .sync-divider::before, .sync-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .sync-input-row {
+      display: flex;
+      gap: 10px;
+    }
+    .sync-input-row input {
+      flex: 1;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      font-size: 1.2rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      padding: 14px;
+      outline: none;
+      font-family: 'SF Mono', 'Fira Code', ui-monospace, monospace;
+      text-transform: uppercase;
+      transition: border-color 0.15s;
+    }
+    .sync-input-row input:focus { border-color: var(--accent); }
+    .sync-input-row input::placeholder {
+      font-size: 0.85rem;
+      font-weight: 400;
+      letter-spacing: 0;
+      color: var(--muted);
+      font-family: inherit;
+    }
+    .btn-link {
+      padding: 14px 18px;
+      border-radius: 12px;
+      border: none;
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: opacity 0.15s;
+    }
+    .btn-link:disabled { opacity: 0.35; cursor: default; }
+    .sync-warning {
+      font-size: 0.76rem;
+      color: var(--muted);
+      margin-top: 10px;
+      line-height: 1.45;
+    }
+    .sync-status-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+
     /* ── Context menu ── */
     .ctx-menu {
       position: fixed;
@@ -452,7 +605,13 @@
 <body>
 
   <header>
-    <h1>Tick Them Off</h1>
+    <div class="header-row">
+      <h1>Tick Them Off</h1>
+      <button class="sync-btn" id="sync-btn" aria-label="Sync settings">
+        <span class="sync-dot" id="sync-dot"></span>
+        <span id="sync-code-label">······</span>
+      </button>
+    </div>
     <p id="header-sub">Track your goals, one rep at a time.</p>
   </header>
 
@@ -498,6 +657,43 @@
     </div>
   </div>
 
+  <!-- Sync modal -->
+  <div class="modal-overlay" id="sync-overlay">
+    <div class="modal" role="dialog" aria-modal="true">
+      <div class="modal-handle"></div>
+      <h2>Sync Between Devices</h2>
+
+      <div class="sync-status-row">
+        <span class="sync-dot" id="sync-dot-panel"></span>
+        <span id="sync-status-text">Connecting…</span>
+      </div>
+
+      <div class="sync-code-box">
+        <div class="sc-label">Your sync code</div>
+        <div class="sc-code" id="sync-code-big">······</div>
+        <button class="btn-copy" id="btn-copy-code">Copy code</button>
+      </div>
+      <p style="font-size:0.78rem;color:var(--muted);line-height:1.45;margin-bottom:4px;">
+        Enter this code on another device to share your goals in real time.
+      </p>
+
+      <div class="sync-divider">link another device</div>
+
+      <div class="field">
+        <label>Enter a code from another device</label>
+        <div class="sync-input-row">
+          <input type="text" id="inp-sync-code" placeholder="e.g. ABC123" maxlength="6" autocomplete="off" />
+          <button class="btn-link" id="btn-link-code" disabled>Link</button>
+        </div>
+        <p class="sync-warning">⚠️ Linking will replace your data on this device with the other device's data.</p>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-cancel" id="sync-close">Done</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Context menu -->
   <div class="ctx-menu" id="ctx-menu">
     <div class="ctx-item" id="ctx-edit">✏️ &nbsp;Edit goal</div>
@@ -509,17 +705,110 @@
   <div id="toast"></div>
 
 <script>
+  // ── Firebase Config ─────────────────────────────────────────────────────────
+  // PASTE YOUR FIREBASE CONFIG HERE ↓
+  const firebaseConfig = {
+    apiKey:            "AIzaSyCZjm-OIf61a8JslGlm67TidLFotsLWH9s",
+    authDomain:        "tick-them-off.firebaseapp.com",
+    databaseURL:       "https://tick-them-off-default-rtdb.firebaseio.com",
+    projectId:         "tick-them-off",
+    storageBucket:     "tick-them-off.firebasestorage.app",
+    messagingSenderId: "872412413543",
+    appId:             "1:872412413543:web:5303edc42d1aafd6935ec2"
+  };
+
+  let db = null;
+  let firebaseReady = false;
+  try {
+    if (!firebaseConfig.apiKey.startsWith('PASTE')) {
+      firebase.initializeApp(firebaseConfig);
+      db = firebase.database();
+      firebaseReady = true;
+    }
+  } catch(e) {
+    console.warn('Firebase init failed, using localStorage only:', e);
+  }
+
+  // ── Sync code ──────────────────────────────────────────────────────────────
+  const SYNC_CODE_KEY = 'tickthemoff_synccode';
+  const STORAGE_KEY   = 'tickthemoff_v1';
+
+  function generateCode() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    return Array.from({length: 6}, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+  }
+
+  let syncCode = localStorage.getItem(SYNC_CODE_KEY);
+  if (!syncCode) {
+    syncCode = generateCode();
+    localStorage.setItem(SYNC_CODE_KEY, syncCode);
+  }
+
   // ── State ──────────────────────────────────────────────────────────────────
-  const STORAGE_KEY = 'tickthemoff_v1';
+  // Seed from local cache immediately so UI isn't blank while Firebase loads
+  let goals = [];
+  try { goals = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { goals = []; }
 
-  function load() {
-    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { return []; }
-  }
-  function save(goals) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(goals));
+  let dbRef = null;
+
+  // ── Sync helpers ───────────────────────────────────────────────────────────
+  function setSyncDot(state) { // 'offline' | 'syncing' | 'connected'
+    ['sync-dot', 'sync-dot-panel'].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.className = 'sync-dot' + (state === 'connected' ? ' connected' : state === 'syncing' ? ' syncing' : '');
+    });
+    const txt = document.getElementById('sync-status-text');
+    if (txt) txt.textContent =
+      state === 'connected' ? 'Synced' :
+      state === 'syncing'   ? 'Syncing…' : 'Offline — changes saved locally';
   }
 
-  let goals = load();
+  function updateSyncUI() {
+    document.getElementById('sync-code-label').textContent = syncCode;
+    document.getElementById('sync-code-big').textContent   = syncCode;
+  }
+
+  function initFirebaseListener() {
+    if (!firebaseReady) {
+      setSyncDot('offline');
+      render();
+      return;
+    }
+    if (dbRef) { dbRef.off(); dbRef = null; }
+
+    setSyncDot('syncing');
+    dbRef = db.ref('users/' + syncCode + '/goals');
+
+    dbRef.on('value', snapshot => {
+      const data = snapshot.val();
+      if (Array.isArray(data)) {
+        goals = data;
+      } else if (data && typeof data === 'object') {
+        goals = Object.values(data);
+      } else {
+        goals = [];
+      }
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(goals));
+      setSyncDot('connected');
+      render();
+    }, err => {
+      console.error('Firebase read error:', err);
+      setSyncDot('offline');
+      render();
+    });
+  }
+
+  // ── Storage ────────────────────────────────────────────────────────────────
+  function save(goalsToSave) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(goalsToSave));
+    if (firebaseReady && db) {
+      setSyncDot('syncing');
+      db.ref('users/' + syncCode + '/goals').set(goalsToSave)
+        .then(() => setSyncDot('connected'))
+        .catch(err => { console.error(err); setSyncDot('offline'); });
+    }
+  }
 
   // ── Period logic ───────────────────────────────────────────────────────────
   function periodStart(period) {
@@ -527,30 +816,29 @@
     if (period === 'daily') {
       return new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
     } else if (period === 'weekly') {
-      const day = now.getDay(); // 0=Sun
+      const day = now.getDay();
       const monday = new Date(now);
       monday.setDate(now.getDate() - ((day + 6) % 7));
       monday.setHours(0, 0, 0, 0);
       return monday.getTime();
-    } else { // monthly
+    } else {
       return new Date(now.getFullYear(), now.getMonth(), 1).getTime();
     }
   }
 
   function periodEnd(period, start) {
     const s = new Date(start);
-    if (period === 'daily') return new Date(s.getFullYear(), s.getMonth(), s.getDate() + 1).getTime();
+    if (period === 'daily')  return new Date(s.getFullYear(), s.getMonth(), s.getDate() + 1).getTime();
     if (period === 'weekly') return new Date(s.getFullYear(), s.getMonth(), s.getDate() + 7).getTime();
     return new Date(s.getFullYear(), s.getMonth() + 1, 1).getTime();
   }
 
   function daysLeft(period, start) {
-    const end = periodEnd(period, start);
-    const diff = end - Date.now();
-    const days = Math.ceil(diff / 86400000);
+    const end  = periodEnd(period, start);
+    const days = Math.ceil((end - Date.now()) / 86400000);
     if (days <= 0) return 'ends today';
     if (days === 1) return '1 day left';
-    return `${days} days left`;
+    return days + ' days left';
   }
 
   function periodLabel(period) {
@@ -578,9 +866,9 @@
   // ── Render ─────────────────────────────────────────────────────────────────
   function render() {
     checkAllResets();
-    const list = document.getElementById('goals-list');
+    const list  = document.getElementById('goals-list');
     const empty = document.getElementById('empty-state');
-    const sub = document.getElementById('header-sub');
+    const sub   = document.getElementById('header-sub');
 
     list.innerHTML = '';
 
@@ -593,16 +881,16 @@
     empty.style.display = 'none';
     const done = goals.filter(g => g.progress >= g.target).length;
     sub.textContent = done === goals.length
-      ? `All ${goals.length} goals complete! 🎉`
-      : `${done} of ${goals.length} goals complete`;
+      ? 'All ' + goals.length + ' goals complete! 🎉'
+      : done + ' of ' + goals.length + ' goals complete';
 
     goals.forEach(g => {
-      const pct = Math.min(100, Math.round((g.progress / g.target) * 100));
+      const pct      = Math.min(100, Math.round((g.progress / g.target) * 100));
       const complete = g.progress >= g.target;
 
       const card = document.createElement('div');
-      card.className = 'card' + (complete ? ' complete' : '');
-      card.dataset.id = g.id;
+      card.className   = 'card' + (complete ? ' complete' : '');
+      card.dataset.id  = g.id;
 
       card.innerHTML = `
         <div class="card-header">
@@ -639,13 +927,12 @@
       list.appendChild(card);
     });
 
-    // bind events on cards
     document.querySelectorAll('.btn-plus').forEach(btn => {
       btn.addEventListener('click', () => addProgress(btn.dataset.id, 1));
     });
     document.querySelectorAll('.btn-add').forEach(btn => {
       btn.addEventListener('click', () => {
-        const inp = document.querySelector(`.num-input[data-id="${btn.dataset.id}"]`);
+        const inp = document.querySelector('.num-input[data-id="' + btn.dataset.id + '"]');
         const val = parseInt(inp.value, 10);
         if (val > 0) { addProgress(btn.dataset.id, val); inp.value = ''; }
       });
@@ -672,43 +959,42 @@
     g.progress = Math.max(0, g.progress + amount);
     save(goals);
 
-    const card = document.querySelector(`.card[data-id="${id}"]`);
+    const card = document.querySelector('.card[data-id="' + id + '"]');
     if (card) card.classList.add('pop');
-    setTimeout(() => card?.classList.remove('pop'), 300);
+    setTimeout(() => card && card.classList.remove('pop'), 300);
 
-    const nowComplete = g.progress >= g.target;
-    if (!wasComplete && nowComplete) {
-      toast(`🎉 "${g.name}" complete!`);
+    if (!wasComplete && g.progress >= g.target) {
+      toast('🎉 "' + g.name + '" complete!');
     } else {
       const remaining = Math.max(0, g.target - g.progress);
-      if (remaining > 0) toast(`+${amount} — ${remaining} to go`);
+      if (remaining > 0) toast('+' + amount + ' — ' + remaining + ' to go');
     }
 
     render();
   }
 
-  // ── Modal ──────────────────────────────────────────────────────────────────
+  // ── Goal modal ─────────────────────────────────────────────────────────────
   let editingId = null;
   let selectedPeriod = 'weekly';
 
   function openModal(id = null) {
     editingId = id;
-    const overlay = document.getElementById('modal-overlay');
-    const title = document.getElementById('modal-title');
-    const nameInp = document.getElementById('inp-name');
+    const overlay   = document.getElementById('modal-overlay');
+    const title     = document.getElementById('modal-title');
+    const nameInp   = document.getElementById('inp-name');
     const targetInp = document.getElementById('inp-target');
 
     if (id) {
       const g = goals.find(x => x.id === id);
-      title.textContent = 'Edit Goal';
-      nameInp.value = g.name;
-      targetInp.value = g.target;
-      selectedPeriod = g.period;
+      title.textContent  = 'Edit Goal';
+      nameInp.value      = g.name;
+      targetInp.value    = g.target;
+      selectedPeriod     = g.period;
     } else {
-      title.textContent = 'New Goal';
-      nameInp.value = '';
-      targetInp.value = '';
-      selectedPeriod = 'weekly';
+      title.textContent  = 'New Goal';
+      nameInp.value      = '';
+      targetInp.value    = '';
+      selectedPeriod     = 'weekly';
     }
 
     updatePeriodBtns();
@@ -729,7 +1015,7 @@
   }
 
   function validateModal() {
-    const name = document.getElementById('inp-name').value.trim();
+    const name   = document.getElementById('inp-name').value.trim();
     const target = parseInt(document.getElementById('inp-target').value, 10);
     document.getElementById('modal-save').disabled = !(name && target > 0);
   }
@@ -751,7 +1037,7 @@
   document.getElementById('inp-target').addEventListener('input', validateModal);
 
   document.getElementById('modal-save').addEventListener('click', () => {
-    const name = document.getElementById('inp-name').value.trim();
+    const name   = document.getElementById('inp-name').value.trim();
     const target = parseInt(document.getElementById('inp-target').value, 10);
     if (!name || !(target > 0)) return;
 
@@ -760,25 +1046,67 @@
       g.name = name;
       if (g.target !== target) { g.target = target; }
       if (g.period !== selectedPeriod) {
-        g.period = selectedPeriod;
+        g.period      = selectedPeriod;
         g.periodStart = periodStart(selectedPeriod);
-        g.progress = 0;
+        g.progress    = 0;
       }
     } else {
       goals.push({
-        id: crypto.randomUUID(),
+        id:          crypto.randomUUID(),
         name,
         target,
-        period: selectedPeriod,
+        period:      selectedPeriod,
         periodStart: periodStart(selectedPeriod),
-        progress: 0,
-        createdAt: Date.now(),
+        progress:    0,
+        createdAt:   Date.now(),
       });
     }
 
     save(goals);
     closeModal();
     render();
+  });
+
+  // ── Sync panel ─────────────────────────────────────────────────────────────
+  document.getElementById('sync-btn').addEventListener('click', () => {
+    document.getElementById('sync-overlay').classList.add('open');
+  });
+  document.getElementById('sync-close').addEventListener('click', () => {
+    document.getElementById('sync-overlay').classList.remove('open');
+  });
+  document.getElementById('sync-overlay').addEventListener('click', e => {
+    if (e.target === document.getElementById('sync-overlay'))
+      document.getElementById('sync-overlay').classList.remove('open');
+  });
+
+  document.getElementById('btn-copy-code').addEventListener('click', () => {
+    navigator.clipboard.writeText(syncCode)
+      .then(() => toast('Code copied! 📋'))
+      .catch(() => toast(syncCode)); // fallback: just show it in toast
+  });
+
+  const syncInput = document.getElementById('inp-sync-code');
+  const linkBtn   = document.getElementById('btn-link-code');
+
+  syncInput.addEventListener('input', () => {
+    syncInput.value = syncInput.value.toUpperCase();
+    linkBtn.disabled = syncInput.value.trim().length !== 6;
+  });
+
+  linkBtn.addEventListener('click', () => {
+    const code = syncInput.value.trim().toUpperCase();
+    if (code.length !== 6) return;
+    if (code === syncCode) { toast('That's already your code!'); return; }
+    if (confirm('Link to code "' + code + '"?\n\nYour current data on this device will be replaced with the other device\'s data.')) {
+      syncCode = code;
+      localStorage.setItem(SYNC_CODE_KEY, syncCode);
+      updateSyncUI();
+      initFirebaseListener();
+      document.getElementById('sync-overlay').classList.remove('open');
+      syncInput.value  = '';
+      linkBtn.disabled = true;
+      toast('Linked! Loading shared data…');
+    }
   });
 
   // ── Context menu ───────────────────────────────────────────────────────────
@@ -788,9 +1116,8 @@
     e.stopPropagation();
     ctxId = id;
     const menu = document.getElementById('ctx-menu');
-    const btn = e.currentTarget;
-    const rect = btn.getBoundingClientRect();
-    menu.style.top = (rect.bottom + 6) + 'px';
+    const rect = e.currentTarget.getBoundingClientRect();
+    menu.style.top   = (rect.bottom + 6) + 'px';
     menu.style.right = (window.innerWidth - rect.right) + 'px';
     menu.classList.add('open');
   }
@@ -810,7 +1137,7 @@
     if (!ctxId) return;
     const g = goals.find(x => x.id === ctxId);
     if (!g) return;
-    g.progress = 0;
+    g.progress    = 0;
     g.periodStart = periodStart(g.period);
     save(goals);
     render();
@@ -821,7 +1148,7 @@
     if (!ctxId) return;
     const g = goals.find(x => x.id === ctxId);
     if (!g) return;
-    if (confirm(`Delete "${g.name}"?`)) {
+    if (confirm('Delete "' + g.name + '"?')) {
       goals = goals.filter(x => x.id !== ctxId);
       save(goals);
       render();
@@ -844,9 +1171,10 @@
   }
 
   // ── Init ───────────────────────────────────────────────────────────────────
-  render();
+  updateSyncUI();
+  initFirebaseListener();
 
-  // Refresh every minute (for period resets / days-left counter)
+  // Refresh every minute for period resets / days-left counter
   setInterval(() => render(), 60000);
 </script>
 </body>
