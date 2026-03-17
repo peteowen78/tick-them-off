@@ -745,7 +745,7 @@
   // ── State ──────────────────────────────────────────────────────────────────
   // Seed from local cache immediately so UI isn't blank while Firebase loads
   let goals = [];
-  try { goals = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { goals = []; }
+  try { goals = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch(e) { goals = []; }
 
   // ── Sync helpers ───────────────────────────────────────────────────────────
   function setSyncDot(state) { // 'offline' | 'connected'
