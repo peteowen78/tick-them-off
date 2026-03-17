@@ -1087,7 +1087,7 @@
   linkBtn.addEventListener('click', () => {
     const code = syncInput.value.trim().toUpperCase();
     if (code.length !== 6) return;
-    if (code === syncCode) { toast('That's already your code!'); return; }
+    if (code === syncCode) { toast("That's already your code!"); return; }
     if (confirm('Link to code "' + code + '"?\n\nYour current data on this device will be replaced with the other device\'s data.')) {
       syncCode = code;
       localStorage.setItem(SYNC_CODE_KEY, syncCode);
