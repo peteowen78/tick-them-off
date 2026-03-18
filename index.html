@@ -389,6 +389,45 @@
   // ── Palette ─────────────────────────────────────────────────────────────────
   var COLORS = ['#6c63ff','#f97316','#22c55e','#ec4899','#06b6d4','#eab308','#a78bfa','#ef4444','#14b8a6','#8b5cf6'];
   var EMOJIS = ['🎯','💪','🏃','🚴','🏊','🧘','⚽','🏋️','📚','✍️','🎸','🎨','🧗','🤸','🥊','🏄','🎾','🧠','💤','🥗','💧','🍎','🚶','🛠️','🌿','🔥','⚡','🦾','🏆','🎖️'];
+
+  // Keyword → emoji suggestions
+  var EMOJI_HINTS = [
+    [/press.?up|push.?up|pressup/i,       '💪'],
+    [/pull.?up/i,                          '🦾'],
+    [/sit.?up|crunch|ab/i,                 '🤸'],
+    [/squat|lunge/i,                       '🏋️'],
+    [/run|jog|sprint|5k|10k|marathon/i,    '🏃'],
+    [/walk|step|steps/i,                   '🚶'],
+    [/cycl|bike|bik|cycling/i,             '🚴'],
+    [/swim|pool/i,                         '🏊'],
+    [/yoga|stretch|pilates|meditat/i,      '🧘'],
+    [/football|soccer/i,                   '⚽'],
+    [/tennis/i,                            '🎾'],
+    [/surf|paddl/i,                        '🏄'],
+    [/climb|boulde/i,                      '🧗'],
+    [/box|kickbox|martial|karate/i,        '🥊'],
+    [/gym|lift|weight|bench|deadlift/i,    '🏋️'],
+    [/read|book|page/i,                    '📚'],
+    [/write|journal|diary|word/i,          '✍️'],
+    [/music|guitar|piano|practice/i,       '🎸'],
+    [/draw|paint|art|sketch/i,             '🎨'],
+    [/sleep|rest|bed/i,                    '💤'],
+    [/eat|meal|diet|veg|salad|fruit/i,     '🥗'],
+    [/water|drink|hydrat/i,                '💧'],
+    [/apple|orange|banana/i,               '🍎'],
+    [/cod|program|dev|app/i,               '🛠️'],
+    [/study|learn|cours|lesson/i,          '🧠'],
+    [/calorie|macro|protein/i,             '🔥'],
+  ];
+
+  var emojiManuallySet = false;
+
+  function suggestEmoji(name) {
+    for (var i = 0; i < EMOJI_HINTS.length; i++) {
+      if (EMOJI_HINTS[i][0].test(name)) return EMOJI_HINTS[i][1];
+    }
+    return null;
+  }
   var selectedColor = COLORS[0];
   var selectedEmoji = '🎯';
 
@@ -400,6 +439,7 @@
     el.textContent = e;
     el.addEventListener('click', function() {
       selectedEmoji = e;
+      emojiManuallySet = true;
       document.getElementById('emoji-display').textContent = e;
       document.getElementById('emoji-grid-wrap').classList.remove('open');
     });
@@ -720,6 +760,7 @@
     var targetInp = document.getElementById('inp-target');
 
     document.getElementById('emoji-grid-wrap').classList.remove('open');
+    emojiManuallySet = false;
 
     if (id) {
       var g = goals.find(function(x) { return x.id === id; });
@@ -729,6 +770,7 @@
       selectedPeriod    = g.period;
       selectedEmoji     = g.icon  || '🎯';
       selectedColor     = g.color || COLORS[0];
+      emojiManuallySet  = true;
     } else {
       title.textContent = 'New Goal';
       nameInp.value     = '';
@@ -772,7 +814,16 @@
   document.querySelectorAll('.period-btn').forEach(function(btn) {
     btn.addEventListener('click', function() { selectedPeriod = btn.dataset.period; updatePeriodBtns(); });
   });
-  document.getElementById('inp-name').addEventListener('input', validateModal);
+  document.getElementById('inp-name').addEventListener('input', function() {
+    validateModal();
+    if (!emojiManuallySet) {
+      var suggestion = suggestEmoji(this.value);
+      if (suggestion) {
+        selectedEmoji = suggestion;
+        document.getElementById('emoji-display').textContent = suggestion;
+      }
+    }
+  });
   document.getElementById('inp-target').addEventListener('input', validateModal);
 
   document.getElementById('modal-save').addEventListener('click', function() {
