@@ -570,23 +570,24 @@
   // ── Storage ────────────────────────────────────────────────────────────────
   function loadFromFirebase() {
     if (!currentUser) return;
-    var path = 'users/' + currentUser.uid + '/goals';
-    toast('☁️ Loading from ' + path.substring(0,30) + '…');
+    var uid = currentUser.uid;
+    var path = 'users/' + uid + '/goals';
     db.ref(path).once('value')
       .then(function(snapshot) {
         var data = snapshot.val();
-        var dataType = data === null ? 'null' : (Array.isArray(data) ? 'array[' + data.length + ']' : 'object{' + Object.keys(data).length + '}');
         if (Array.isArray(data) && data.length > 0) {
           goals = data;
-          toast('✅ Loaded ' + goals.length + ' goal(s)');
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(goals));
+          toast('✅ Loaded ' + goals.length + ' goal(s) [uid:' + uid.slice(-4) + ']');
         } else if (data && typeof data === 'object' && Object.keys(data).length > 0) {
           goals = Object.values(data);
-          toast('✅ Loaded ' + goals.length + ' goal(s) (as object)');
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(goals));
+          toast('✅ Loaded ' + goals.length + ' goal(s)');
         } else {
-          goals = [];
-          toast('☁️ Firebase returned: ' + dataType);
+          // Firebase empty — fall back to localStorage, don't wipe it
+          try { goals = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch(e) { goals = []; }
+          toast('☁️ Nothing in Firebase [uid:' + uid.slice(-4) + '] — ' + (goals.length ? 'using local cache' : 'no data'));
         }
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(goals));
         render();
       })
       .catch(function(err) {
@@ -600,9 +601,10 @@
   function save(goalsToSave) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(goalsToSave));
     if (currentUser) {
-      var path = 'users/' + currentUser.uid + '/goals';
+      var uid = currentUser.uid;
+      var path = 'users/' + uid + '/goals';
       db.ref(path).set(goalsToSave)
-        .then(function() { toast('✅ Saved ' + goalsToSave.length + ' goal(s) to cloud'); })
+        .then(function() { toast('✅ Saved ' + goalsToSave.length + ' goal(s) [uid:' + uid.slice(-4) + ']'); })
         .catch(function(err) {
           console.error('Firebase save error:', err);
           toast('❌ Save failed: ' + err.code);
@@ -905,7 +907,7 @@
     el.textContent = msg;
     el.classList.add('show');
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(function() { el.classList.remove('show'); }, 2400);
+    toastTimer = setTimeout(function() { el.classList.remove('show'); }, 5000);
   }
 
   // ── Helpers ────────────────────────────────────────────────────────────────
