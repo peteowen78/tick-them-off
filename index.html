@@ -570,25 +570,27 @@
   // ── Storage ────────────────────────────────────────────────────────────────
   function loadFromFirebase() {
     if (!currentUser) return;
-    toast('☁️ Loading…');
-    db.ref('users/' + currentUser.uid + '/goals').once('value')
+    var path = 'users/' + currentUser.uid + '/goals';
+    toast('☁️ Loading from ' + path.substring(0,30) + '…');
+    db.ref(path).once('value')
       .then(function(snapshot) {
         var data = snapshot.val();
+        var dataType = data === null ? 'null' : (Array.isArray(data) ? 'array[' + data.length + ']' : 'object{' + Object.keys(data).length + '}');
         if (Array.isArray(data) && data.length > 0) {
           goals = data;
-          toast('✅ Loaded ' + goals.length + ' goal(s) from cloud');
+          toast('✅ Loaded ' + goals.length + ' goal(s)');
         } else if (data && typeof data === 'object' && Object.keys(data).length > 0) {
           goals = Object.values(data);
-          toast('✅ Loaded ' + goals.length + ' goal(s) from cloud');
+          toast('✅ Loaded ' + goals.length + ' goal(s) (as object)');
         } else {
           goals = [];
-          toast('☁️ No cloud data yet');
+          toast('☁️ Firebase returned: ' + dataType);
         }
         localStorage.setItem(STORAGE_KEY, JSON.stringify(goals));
         render();
       })
       .catch(function(err) {
-        toast('❌ Firebase error: ' + err.code);
+        toast('❌ Load error: ' + err.code);
         console.error('Firebase load error:', err);
         try { goals = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch(e) { goals = []; }
         render();
@@ -598,12 +600,15 @@
   function save(goalsToSave) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(goalsToSave));
     if (currentUser) {
-      db.ref('users/' + currentUser.uid + '/goals').set(goalsToSave)
-        .then(function() { toast('✅ Saved to cloud'); })
+      var path = 'users/' + currentUser.uid + '/goals';
+      db.ref(path).set(goalsToSave)
+        .then(function() { toast('✅ Saved ' + goalsToSave.length + ' goal(s) to cloud'); })
         .catch(function(err) {
           console.error('Firebase save error:', err);
           toast('❌ Save failed: ' + err.code);
         });
+    } else {
+      toast('⚠️ Not signed in — saved locally only');
     }
   }
 
