@@ -570,20 +570,25 @@
   // ── Storage ────────────────────────────────────────────────────────────────
   function loadFromFirebase() {
     if (!currentUser) return;
+    toast('☁️ Loading…');
     db.ref('users/' + currentUser.uid + '/goals').once('value')
       .then(function(snapshot) {
         var data = snapshot.val();
         if (Array.isArray(data) && data.length > 0) {
           goals = data;
-        } else if (data && typeof data === 'object') {
+          toast('✅ Loaded ' + goals.length + ' goal(s) from cloud');
+        } else if (data && typeof data === 'object' && Object.keys(data).length > 0) {
           goals = Object.values(data);
+          toast('✅ Loaded ' + goals.length + ' goal(s) from cloud');
         } else {
-          try { goals = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch(e) { goals = []; }
+          goals = [];
+          toast('☁️ No cloud data yet');
         }
         localStorage.setItem(STORAGE_KEY, JSON.stringify(goals));
         render();
       })
       .catch(function(err) {
+        toast('❌ Firebase error: ' + err.code);
         console.error('Firebase load error:', err);
         try { goals = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch(e) { goals = []; }
         render();
@@ -594,9 +599,10 @@
     localStorage.setItem(STORAGE_KEY, JSON.stringify(goalsToSave));
     if (currentUser) {
       db.ref('users/' + currentUser.uid + '/goals').set(goalsToSave)
+        .then(function() { toast('✅ Saved to cloud'); })
         .catch(function(err) {
           console.error('Firebase save error:', err);
-          toast('⚠️ Could not save to cloud — check your connection');
+          toast('❌ Save failed: ' + err.code);
         });
     }
   }
