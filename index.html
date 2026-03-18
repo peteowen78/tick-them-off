@@ -177,7 +177,7 @@
     .btn-plus {
       flex-shrink: 0; width: 54px; height: 54px; border-radius: 16px; border: none;
       background: var(--card-color, var(--accent)); color: #fff;
-      font-size: 1.8rem; font-weight: 200; cursor: pointer;
+      font-size: 1.5rem; font-weight: 600; cursor: pointer;
       display: flex; align-items: center; justify-content: center;
       transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), filter 0.15s;
       -webkit-user-select: none; user-select: none;
@@ -594,7 +594,10 @@
     localStorage.setItem(STORAGE_KEY, JSON.stringify(goalsToSave));
     if (currentUser) {
       db.ref('users/' + currentUser.uid + '/goals').set(goalsToSave)
-        .catch(function(err) { console.error('Firebase save error:', err); });
+        .catch(function(err) {
+          console.error('Firebase save error:', err);
+          toast('⚠️ Could not save to cloud — check your connection');
+        });
     }
   }
 
@@ -691,10 +694,10 @@
           '<div class="progress-bar-fill' + (complete ? ' full' : '') + '" style="width:' + pct + '%"></div>' +
         '</div>' +
         '<div class="log-row">' +
-          '<button class="btn-plus' + (complete ? ' done-btn' : '') + '" data-id="' + g.id + '" aria-label="Add one">+</button>' +
+          '<button class="btn-plus' + (complete ? ' done-btn' : '') + '" data-id="' + g.id + '" aria-label="Tick one">' + (complete ? '\u2713' : '\u2713') + '</button>' +
           '<div class="num-input-wrap">' +
-            '<input type="number" min="1" placeholder="Enter amount\u2026" inputmode="numeric" data-id="' + g.id + '" class="num-input" />' +
-            '<button class="btn-add" data-id="' + g.id + '">Add</button>' +
+            '<input type="number" min="1" placeholder="How many\u2026" inputmode="numeric" data-id="' + g.id + '" class="num-input" />' +
+            '<button class="btn-add" data-id="' + g.id + '">Tick</button>' +
           '</div>' +
         '</div>';
 
@@ -722,7 +725,7 @@
   }
 
   // ── Progress ───────────────────────────────────────────────────────────────
-  var encouragements = ['Keep going! 💪','Smashing it! 🔥','Beast mode! ⚡','Love that energy!','You got this! 🚀','Crushing it! 💥','On fire! 🔥','Let\'s gooo! 🎉'];
+  var encouragements = ['Keep ticking! 💪','Smashing it! 🔥','Beast mode! ⚡','Love that energy!','You got this! 🚀','Crushing it! 💥','On fire! 🔥','Let\'s gooo! 🎉'];
 
   function addProgress(id, amount) {
     var g = goals.find(function(x) { return x.id === id; });
