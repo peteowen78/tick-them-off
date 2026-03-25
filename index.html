@@ -266,7 +266,7 @@
   var firebaseConfig = {
     apiKey:            "AIzaSyCZjm-OIf61a8JslGlm67TidLFotsLWH9s",
     authDomain:        "tick-them-off.firebaseapp.com",
-    databaseURL:       "https://tick-them-off-default-rtdb.firebaseio.com",
+    databaseURL:       "https://tick-them-off-default-rtdb.europe-west1.firebasedatabase.app",
     projectId:         "tick-them-off",
     storageBucket:     "tick-them-off.firebasestorage.app",
     messagingSenderId: "872412413543",
@@ -428,9 +428,20 @@
   // ── Auth ───────────────────────────────────────────────────────────────────
   var loginScreen = document.getElementById('login-screen');
 
+  // Handle redirect result on page load (for signInWithRedirect flow)
+  auth.getRedirectResult().then(function(result) {
+    if (result && result.user) {
+      // Successfully signed in via redirect — onAuthStateChanged will fire
+    }
+  }).catch(function(err) {
+    console.error('Redirect sign-in error:', err);
+    toast('Sign-in failed: ' + err.message);
+  });
+
   document.getElementById('btn-google-signin').addEventListener('click', function() {
     var provider = new firebase.auth.GoogleAuthProvider();
-    auth.signInWithPopup(provider).catch(function(err) {
+    // Use redirect (works on all browsers/devices including mobile)
+    auth.signInWithRedirect(provider).catch(function(err) {
       console.error('Sign-in error:', err);
       toast('Sign-in failed. Please try again.');
     });
