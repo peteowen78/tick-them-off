@@ -14,17 +14,14 @@
 
   <style>
     :root {
-      --bg: #f4f3ff;
-      --surface: #ffffff;
-      --surface2: #eeecff;
-      --border: #dddaf5;
-      --accent: #6c63ff;
-      --accent2: #8b5cf6;
-      --success: #16a34a;
-      --text: #1a1830;
-      --muted: #8880b0;
+      --bg: #ede8e0;
+      --surface: #f8f5f0;
+      --surface2: #e4ddd4;
+      --border: #d0c8bc;
+      --text: #1a1814;
+      --muted: #7a7060;
+      --success: #2d7a4a;
       --radius: 20px;
-      --card-pad: 20px;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -38,235 +35,128 @@
     }
 
     /* ── Confetti canvas ── */
-    #confetti-canvas {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 999;
-    }
+    #confetti-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 999; }
 
     /* ── Login screen ── */
-    #login-screen {
-      position: fixed;
-      inset: 0;
-      background: var(--bg);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 40px 32px;
-      z-index: 500;
-      text-align: center;
-    }
-    .login-icon { font-size: 4rem; margin-bottom: 16px; animation: float 3s ease-in-out infinite; }
-    @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-    #login-screen h1 { font-size: 2.2rem; font-weight: 900; letter-spacing: -0.05em; margin-bottom: 8px; background: linear-gradient(135deg, var(--text) 30%, var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    #login-screen { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 32px; z-index: 500; text-align: center; }
+    .login-icon { font-size: 3.5rem; margin-bottom: 20px; }
+    #login-screen h1 { font-size: 2.4rem; font-weight: 900; letter-spacing: -0.05em; margin-bottom: 10px; }
     #login-screen p { color: var(--muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 52px; max-width: 260px; }
-    .btn-google {
-      display: flex; align-items: center; gap: 12px;
-      background: #fff; color: #3c4043; border: none; border-radius: 16px;
-      padding: 18px 32px; font-size: 1rem; font-weight: 700;
-      cursor: pointer; width: 100%; max-width: 300px; justify-content: center;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.4);
-      transition: transform 0.15s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.15s;
-    }
-    .btn-google:active { transform: scale(0.95); box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
-    .btn-google svg { flex-shrink: 0; }
+    .btn-google { display: flex; align-items: center; gap: 12px; background: var(--text); color: #fff; border: none; border-radius: 50px; padding: 18px 32px; font-size: 1rem; font-weight: 700; cursor: pointer; width: 100%; max-width: 300px; justify-content: center; transition: opacity 0.15s; }
+    .btn-google:active { opacity: 0.8; }
+    .btn-google svg path { fill: #fff !important; }
     #login-screen.hidden { display: none; }
 
     /* ── Header ── */
-    header {
-      padding: 56px 20px 14px;
-      position: sticky; top: 0;
-      background: linear-gradient(180deg, var(--bg) 85%, transparent);
-      z-index: 10;
-    }
-    .header-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px; }
-    header h1 { font-size: 1.5rem; font-weight: 900; letter-spacing: -0.04em; }
-    header p { color: var(--muted); font-size: 0.82rem; margin-top: 3px; }
-    .user-btn {
-      width: 38px; height: 38px; border-radius: 50%;
-      border: 2px solid var(--border); background: var(--surface2);
-      cursor: pointer; overflow: hidden;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.9rem; font-weight: 800; color: var(--accent2);
-      transition: border-color 0.2s, transform 0.15s cubic-bezier(0.34,1.56,0.64,1);
-      flex-shrink: 0; padding: 0;
-    }
-    .user-btn:active { transform: scale(0.9); }
-    .user-btn:hover { border-color: var(--accent); }
+    header { padding: 56px 20px 16px; position: sticky; top: 0; background: var(--bg); z-index: 10; }
+    .header-row { display: flex; align-items: center; justify-content: space-between; }
+    header h1 { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.05em; line-height: 1; }
+    header p { color: var(--muted); font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; margin-top: 5px; }
+    .user-btn { width: 36px; height: 36px; border-radius: 50%; border: none; background: var(--text); cursor: pointer; overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 800; color: #fff; flex-shrink: 0; padding: 0; transition: opacity 0.15s; }
+    .user-btn:active { opacity: 0.7; }
     .user-btn img { width: 100%; height: 100%; object-fit: cover; }
 
     /* ── Goal list ── */
-    #goals-list { padding: 8px 16px 0; display: flex; flex-direction: column; gap: 12px; }
+    #goals-list { padding: 12px 16px 0; display: flex; flex-direction: column; gap: 10px; }
 
     /* ── Empty state ── */
-    #empty-state { text-align: center; padding: 70px 24px; color: var(--muted); }
-    #empty-state .icon { font-size: 3.5rem; margin-bottom: 14px; animation: float 3s ease-in-out infinite; }
-    #empty-state h2 { font-size: 1.15rem; font-weight: 800; color: var(--text); margin-bottom: 8px; }
+    #empty-state { text-align: center; padding: 80px 24px; color: var(--muted); }
+    #empty-state .icon { font-size: 3rem; margin-bottom: 16px; }
+    #empty-state h2 { font-size: 1.3rem; font-weight: 900; letter-spacing: -0.04em; color: var(--text); margin-bottom: 8px; }
     #empty-state p { font-size: 0.88rem; line-height: 1.6; }
 
     /* ── Goal card ── */
-    .card {
-      background: var(--surface);
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius);
-      padding: var(--card-pad);
-      position: relative;
-      overflow: hidden;
-      transition: transform 0.15s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.2s;
-      box-shadow: 0 2px 12px rgba(108,99,255,0.07);
-    }
-    .card::before {
-      content: '';
-      position: absolute;
-      left: 0; top: 0; bottom: 0;
-      width: 4px;
-      background: var(--card-color, var(--accent));
-      border-radius: 4px 0 0 4px;
-    }
-    .card.complete {
-      border-color: rgba(34,197,94,0.4);
-      box-shadow: 0 0 0 1px rgba(34,197,94,0.1), 0 8px 32px rgba(34,197,94,0.08);
-    }
-    .card.complete::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(135deg, rgba(34,197,94,0.05) 0%, transparent 60%);
-      pointer-events: none;
-    }
-    @keyframes pop {
-      0% { transform: scale(1); }
-      40% { transform: scale(1.05); }
-      100% { transform: scale(1); }
-    }
-    .card.pop { animation: pop 0.35s cubic-bezier(0.34,1.56,0.64,1); }
+    .card { background: var(--surface); border-radius: var(--radius); padding: 20px; position: relative; overflow: hidden; transition: transform 0.15s; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+    .card.complete { background: #e6f0ea; }
+    @keyframes pop { 0%{transform:scale(1)} 40%{transform:scale(1.03)} 100%{transform:scale(1)} }
+    .card.pop { animation: pop 0.3s ease; }
 
-    .card-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 14px; gap: 10px; }
-    .card-icon { font-size: 1.8rem; line-height: 1; flex-shrink: 0; margin-top: 1px; }
-    .card-title-wrap { flex: 1; min-width: 0; }
-    .card-title { font-size: 1.05rem; font-weight: 700; letter-spacing: -0.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .card-meta { display: flex; align-items: center; gap: 6px; margin-top: 4px; flex-wrap: wrap; }
-    .badge { display: inline-block; font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; padding: 2px 8px; border-radius: 20px; background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
-    .badge.period-badge { color: var(--card-color, var(--accent2)); border-color: var(--card-color, var(--accent2)); opacity: 0.9; }
-    .days-left { font-size: 0.73rem; color: var(--muted); }
-    .card-menu-btn { background: none; border: none; color: var(--muted); cursor: pointer; padding: 6px; border-radius: 10px; font-size: 1.1rem; line-height: 1; flex-shrink: 0; transition: color 0.15s, background 0.15s, transform 0.1s; }
-    .card-menu-btn:active { transform: scale(0.85); color: var(--text); background: var(--surface2); }
+    .card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .card-top-left { display: flex; align-items: center; gap: 8px; min-width: 0; }
+    .card-icon { font-size: 1.3rem; line-height: 1; flex-shrink: 0; }
+    .card-name { font-size: 0.85rem; font-weight: 800; letter-spacing: 0.02em; text-transform: uppercase; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .card-top-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+    .period-tag { font-size: 0.6rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); background: var(--surface2); border-radius: 20px; padding: 3px 8px; }
 
-    /* ── Progress ── */
-    .progress-row { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 10px; }
-    .count-display { font-size: 2rem; font-weight: 900; letter-spacing: -0.05em; line-height: 1; font-variant-numeric: tabular-nums; }
-    .count-display .done { color: var(--card-color, var(--accent2)); }
-    .count-display .sep { color: var(--muted); font-weight: 300; margin: 0 2px; font-size: 1.3rem; }
-    .count-display .total { color: var(--muted); font-size: 1.2rem; font-weight: 600; }
-    .pct-label { font-size: 0.8rem; color: var(--muted); font-weight: 700; }
-    .pct-label.done-label { color: var(--success); font-size: 0.9rem; }
+    .card-numbers { margin-bottom: 10px; }
+    .card-big-num { font-size: 4.5rem; font-weight: 900; letter-spacing: -0.05em; line-height: 0.9; color: var(--card-color, var(--text)); font-variant-numeric: tabular-nums; }
+    .card-big-num.complete-num { color: var(--success); }
+    .card-sub { font-size: 0.75rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 5px; }
 
-    .progress-bar-track { width: 100%; height: 8px; background: var(--surface2); border-radius: 10px; overflow: hidden; margin-bottom: 16px; }
-    .progress-bar-fill {
-      height: 100%; border-radius: 10px;
-      background: linear-gradient(90deg, var(--card-color, var(--accent)), color-mix(in srgb, var(--card-color, var(--accent)) 60%, white));
-      transition: width 0.5s cubic-bezier(0.34,1.2,0.64,1);
-      box-shadow: 0 0 8px var(--card-color, var(--accent));
-    }
-    .progress-bar-fill.full { background: linear-gradient(90deg, var(--success), #4ade80); box-shadow: 0 0 10px rgba(34,197,94,0.6); }
+    .progress-bar-track { width: 100%; height: 3px; background: var(--surface2); border-radius: 4px; overflow: hidden; margin-bottom: 14px; }
+    .progress-bar-fill { height: 100%; border-radius: 4px; background: var(--card-color, var(--text)); transition: width 0.5s cubic-bezier(0.34,1.2,0.64,1); }
+    .progress-bar-fill.full { background: var(--success); }
 
-    /* ── Log controls ── */
-    .log-row { display: flex; gap: 10px; align-items: center; }
-    .btn-plus {
-      flex-shrink: 0; width: 54px; height: 54px; border-radius: 16px; border: none;
-      background: var(--card-color, var(--accent)); color: #fff;
-      font-size: 1.5rem; font-weight: 600; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), filter 0.15s;
-      -webkit-user-select: none; user-select: none;
-      box-shadow: 0 4px 16px color-mix(in srgb, var(--card-color, var(--accent)) 50%, transparent);
-    }
-    .btn-plus:active { transform: scale(0.85); filter: brightness(1.3); }
-    .btn-plus.done-btn { background: var(--success); box-shadow: 0 4px 16px rgba(34,197,94,0.4); }
-    .num-input-wrap { flex: 1; display: flex; gap: 8px; background: var(--surface2); border: 1.5px solid var(--border); border-radius: 16px; overflow: hidden; padding: 0 4px 0 14px; align-items: center; transition: border-color 0.2s; }
-    .num-input-wrap:focus-within { border-color: var(--card-color, var(--accent)); }
-    .num-input-wrap input { flex: 1; background: none; border: none; color: var(--text); font-size: 1rem; padding: 13px 0; outline: none; font-family: inherit; width: 0; min-width: 0; font-variant-numeric: tabular-nums; }
-    .num-input-wrap input::placeholder { color: var(--muted); }
-    .btn-add { flex-shrink: 0; background: var(--surface); border: 1.5px solid var(--border); color: var(--text); font-size: 0.82rem; font-weight: 700; padding: 9px 14px; border-radius: 12px; cursor: pointer; transition: background 0.15s, transform 0.15s cubic-bezier(0.34,1.56,0.64,1); white-space: nowrap; }
-    .btn-add:active { background: var(--card-color, var(--accent)); border-color: transparent; transform: scale(0.93); }
+    .card-foot { display: flex; gap: 8px; align-items: center; }
+    .tick-input-wrap { flex: 1; background: var(--surface2); border-radius: 50px; overflow: hidden; display: flex; align-items: center; padding: 0 4px 0 16px; }
+    .tick-input-wrap input { flex: 1; background: none; border: none; color: var(--text); font-size: 0.9rem; padding: 11px 0; outline: none; font-family: inherit; width: 0; min-width: 0; font-variant-numeric: tabular-nums; }
+    .tick-input-wrap input::placeholder { color: var(--muted); font-size: 0.82rem; }
+    .btn-tick-add { background: var(--bg); border: none; color: var(--muted); font-size: 0.7rem; font-weight: 800; padding: 7px 12px; border-radius: 50px; cursor: pointer; text-transform: uppercase; letter-spacing: 0.05em; margin-right: 3px; white-space: nowrap; transition: color 0.1s; }
+    .btn-tick-add:active { color: var(--text); }
+
+    .btn-tick { flex-shrink: 0; width: 50px; height: 50px; border-radius: 50%; border: none; background: var(--card-color, var(--text)); color: #fff; font-size: 1.3rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), opacity 0.1s; -webkit-user-select: none; user-select: none; }
+    .btn-tick:active { transform: scale(0.85); opacity: 0.85; }
+    .btn-tick.done-btn { background: var(--success); }
+    .card-menu-btn { background: none; border: none; color: var(--muted); cursor: pointer; padding: 4px 6px; border-radius: 8px; font-size: 1rem; line-height: 1; }
 
     /* ── FAB ── */
-    #fab {
-      position: fixed; bottom: 30px; right: 20px;
-      width: 64px; height: 64px; border-radius: 50%;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      border: none; color: #fff; font-size: 2rem; font-weight: 200;
-      cursor: pointer; display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 8px 32px rgba(108,99,255,0.5);
-      transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.2s;
-      z-index: 20;
-    }
-    #fab:active { transform: scale(0.88); box-shadow: 0 4px 16px rgba(108,99,255,0.4); }
+    #fab { position: fixed; bottom: 30px; right: 20px; width: 58px; height: 58px; border-radius: 50%; background: var(--text); border: none; color: #fff; font-size: 1.8rem; font-weight: 200; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 20px rgba(0,0,0,0.2); transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1); z-index: 20; }
+    #fab:active { transform: scale(0.88); }
 
     /* ── Modal ── */
-    .modal-overlay { position: fixed; inset: 0; background: rgba(80,70,160,0.25); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 100; display: flex; align-items: flex-end; opacity: 0; pointer-events: none; transition: opacity 0.25s; }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.25); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); z-index: 100; display: flex; align-items: flex-end; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
     .modal-overlay.open { opacity: 1; pointer-events: all; }
-    .modal { background: var(--surface); border: 1.5px solid var(--border); border-radius: 28px 28px 0 0; padding: 24px 20px 44px; width: 100%; transform: translateY(100%); transition: transform 0.35s cubic-bezier(0.34,1.15,0.64,1); }
+    .modal { background: var(--surface); border-radius: 28px 28px 0 0; padding: 24px 20px 44px; width: 100%; transform: translateY(100%); transition: transform 0.35s cubic-bezier(0.34,1.1,0.64,1); }
     .modal-overlay.open .modal { transform: translateY(0); }
     .modal-handle { width: 40px; height: 4px; border-radius: 2px; background: var(--border); margin: 0 auto 22px; }
-    .modal h2 { font-size: 1.3rem; font-weight: 800; margin-bottom: 22px; letter-spacing: -0.03em; }
+    .modal h2 { font-size: 1.4rem; font-weight: 900; margin-bottom: 22px; letter-spacing: -0.04em; }
 
-    /* ── Emoji picker ── */
     .emoji-row { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
-    .emoji-display { width: 56px; height: 56px; border-radius: 16px; background: var(--surface2); border: 1.5px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; cursor: pointer; flex-shrink: 0; transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), border-color 0.15s; }
+    .emoji-display { width: 56px; height: 56px; border-radius: 16px; background: var(--surface2); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; cursor: pointer; flex-shrink: 0; transition: transform 0.15s; }
     .emoji-display:active { transform: scale(0.9); }
-    .emoji-display:hover { border-color: var(--accent); }
-    .emoji-grid-wrap { background: var(--surface2); border: 1.5px solid var(--border); border-radius: 16px; padding: 12px; margin-bottom: 16px; display: none; }
+    .emoji-grid-wrap { background: var(--surface2); border-radius: 16px; padding: 12px; margin-bottom: 16px; display: none; }
     .emoji-grid-wrap.open { display: block; }
     .emoji-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; }
-    .emoji-opt { font-size: 1.4rem; text-align: center; padding: 6px; border-radius: 10px; cursor: pointer; transition: background 0.1s, transform 0.15s; }
-    .emoji-opt:hover { background: var(--border); transform: scale(1.2); }
+    .emoji-opt { font-size: 1.4rem; text-align: center; padding: 6px; border-radius: 10px; cursor: pointer; transition: background 0.1s; }
+    .emoji-opt:active { background: var(--border); }
 
-    /* ── Color picker ── */
     .color-row { display: flex; gap: 8px; flex-wrap: wrap; }
-    .color-swatch {
-      width: 32px; height: 32px; border-radius: 50%; cursor: pointer;
-      border: 2.5px solid transparent;
-      transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), border-color 0.15s;
-    }
+    .color-swatch { width: 30px; height: 30px; border-radius: 50%; cursor: pointer; border: 2.5px solid transparent; transition: transform 0.15s; }
     .color-swatch:active { transform: scale(0.85); }
-    .color-swatch.selected { border-color: #fff; transform: scale(1.15); }
+    .color-swatch.selected { border-color: var(--text); transform: scale(1.1); }
 
     .field { margin-bottom: 18px; }
-    .field label { display: block; font-size: 0.75rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
-    .field input { width: 100%; background: var(--surface2); border: 1.5px solid var(--border); border-radius: 14px; color: var(--text); font-size: 1rem; padding: 15px; outline: none; font-family: inherit; appearance: none; -webkit-appearance: none; transition: border-color 0.15s; }
-    .field input:focus { border-color: var(--accent); }
+    .field label { display: block; font-size: 0.7rem; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 8px; }
+    .field input { width: 100%; background: var(--surface2); border: none; border-radius: 14px; color: var(--text); font-size: 1rem; padding: 15px; outline: none; font-family: inherit; appearance: none; -webkit-appearance: none; transition: box-shadow 0.15s; }
+    .field input:focus { box-shadow: 0 0 0 2px var(--text); }
     .field input::placeholder { color: var(--muted); }
 
     .period-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-    .period-btn { padding: 13px 8px; border-radius: 14px; border: 2px solid var(--border); background: var(--surface2); color: var(--muted); font-size: 0.9rem; font-weight: 700; cursor: pointer; text-align: center; transition: all 0.2s cubic-bezier(0.34,1.2,0.64,1); }
-    .period-btn.selected { border-color: var(--accent); color: var(--accent2); background: rgba(108,99,255,0.12); transform: scale(1.03); }
+    .period-btn { padding: 14px 8px; border-radius: 14px; border: 2px solid var(--border); background: transparent; color: var(--muted); font-size: 0.82rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.03em; cursor: pointer; text-align: center; transition: all 0.15s; }
+    .period-btn.selected { border-color: var(--text); color: var(--text); background: var(--surface2); }
 
     .modal-actions { display: flex; gap: 10px; margin-top: 26px; }
-    .btn-cancel { flex: 1; padding: 17px; border-radius: 16px; border: 1.5px solid var(--border); background: var(--surface2); color: var(--text); font-size: 1rem; font-weight: 700; cursor: pointer; transition: background 0.15s; }
-    .btn-save { flex: 2; padding: 17px; border-radius: 16px; border: none; background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; font-size: 1rem; font-weight: 800; cursor: pointer; transition: opacity 0.15s, transform 0.15s cubic-bezier(0.34,1.56,0.64,1); }
-    .btn-save:active { transform: scale(0.97); }
-    .btn-save:disabled { opacity: 0.35; }
+    .btn-cancel { flex: 1; padding: 17px; border-radius: 50px; border: 2px solid var(--border); background: transparent; color: var(--text); font-size: 1rem; font-weight: 700; cursor: pointer; }
+    .btn-save { flex: 2; padding: 17px; border-radius: 50px; border: none; background: var(--text); color: #fff; font-size: 1rem; font-weight: 800; cursor: pointer; transition: opacity 0.15s; }
+    .btn-save:disabled { opacity: 0.3; }
 
     /* ── User menu ── */
-    #user-menu { position: fixed; top: 62px; right: 16px; background: var(--surface); border: 1.5px solid var(--border); border-radius: 16px; padding: 6px; min-width: 200px; z-index: 200; box-shadow: 0 16px 48px rgba(0,0,0,0.6); opacity: 0; pointer-events: none; transform: scale(0.88) translateY(-10px); transform-origin: top right; transition: opacity 0.2s, transform 0.2s cubic-bezier(0.34,1.3,0.64,1); }
+    #user-menu { position: fixed; top: 62px; right: 16px; background: var(--surface); border-radius: 16px; padding: 6px; min-width: 200px; z-index: 200; box-shadow: 0 8px 32px rgba(0,0,0,0.12); opacity: 0; pointer-events: none; transform: scale(0.9) translateY(-8px); transform-origin: top right; transition: opacity 0.15s, transform 0.15s; }
     #user-menu.open { opacity: 1; pointer-events: all; transform: scale(1) translateY(0); }
-    .user-menu-name { padding: 10px 14px 8px; font-size: 0.78rem; color: var(--muted); font-weight: 600; border-bottom: 1px solid var(--border); margin-bottom: 4px; }
+    .user-menu-name { padding: 10px 14px 8px; font-size: 0.7rem; color: var(--muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; border-bottom: 1px solid var(--border); margin-bottom: 4px; }
     .user-menu-item { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 12px; cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: background 0.1s; }
-    .user-menu-item:hover { background: var(--surface2); }
-    .user-menu-item.danger { color: #f87171; }
+    .user-menu-item:active { background: var(--surface2); }
+    .user-menu-item.danger { color: #c0392b; }
 
     /* ── Context menu ── */
-    .ctx-menu { position: fixed; background: var(--surface); border: 1.5px solid var(--border); border-radius: 16px; padding: 6px; min-width: 170px; z-index: 200; box-shadow: 0 16px 48px rgba(0,0,0,0.6); opacity: 0; pointer-events: none; transform: scale(0.88); transform-origin: top right; transition: opacity 0.2s, transform 0.2s cubic-bezier(0.34,1.3,0.64,1); }
+    .ctx-menu { position: fixed; background: var(--surface); border-radius: 16px; padding: 6px; min-width: 170px; z-index: 200; box-shadow: 0 8px 32px rgba(0,0,0,0.12); opacity: 0; pointer-events: none; transform: scale(0.9); transform-origin: top right; transition: opacity 0.15s, transform 0.15s; }
     .ctx-menu.open { opacity: 1; pointer-events: all; transform: scale(1); }
     .ctx-item { display: flex; align-items: center; gap: 10px; padding: 13px 14px; border-radius: 12px; cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: background 0.1s; }
-    .ctx-item:hover { background: var(--surface2); }
-    .ctx-item.danger { color: #f87171; }
+    .ctx-item:active { background: var(--surface2); }
+    .ctx-item.danger { color: #c0392b; }
 
     /* ── Toast ── */
-    #toast { position: fixed; bottom: 110px; left: 50%; transform: translateX(-50%) translateY(16px); background: var(--text); color: #fff; border-radius: 40px; padding: 11px 22px; font-size: 0.9rem; font-weight: 600; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.2s, transform 0.25s cubic-bezier(0.34,1.3,0.64,1); z-index: 300; box-shadow: 0 8px 32px rgba(26,24,48,0.2); }
+    #toast { position: fixed; bottom: 110px; left: 50%; transform: translateX(-50%) translateY(16px); background: var(--text); color: #fff; border-radius: 40px; padding: 11px 22px; font-size: 0.88rem; font-weight: 700; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.2s, transform 0.25s cubic-bezier(0.34,1.3,0.64,1); z-index: 300; letter-spacing: -0.01em; }
     #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   </style>
 </head>
@@ -387,7 +277,7 @@
   var db   = firebase.database();
 
   // ── Palette ─────────────────────────────────────────────────────────────────
-  var COLORS = ['#6c63ff','#f97316','#22c55e','#ec4899','#06b6d4','#eab308','#a78bfa','#ef4444','#14b8a6','#8b5cf6'];
+  var COLORS = ['#4a6fa5','#c07840','#5a8a6a','#9a5a8a','#4a8898','#b89030','#8a4a4a','#6a7a50','#7a5090','#3a7878'];
   var EMOJIS = ['🎯','💪','🏃','🚴','🏊','🧘','⚽','🏋️','📚','✍️','🎸','🎨','🧗','🤸','🥊','🏄','🎾','🧠','💤','🥗','💧','🍎','🚶','🛠️','🌿','🔥','⚡','🦾','🏆','🎖️'];
 
   // Keyword → emoji suggestions
@@ -685,42 +575,40 @@
       card.dataset.id = g.id;
       card.style.setProperty('--card-color', color);
 
+      var remaining = Math.max(0, g.target - g.progress);
       card.innerHTML =
-        '<div class="card-header">' +
-          '<div class="card-icon">' + icon + '</div>' +
-          '<div class="card-title-wrap">' +
-            '<div class="card-title">' + esc(g.name) + '</div>' +
-            '<div class="card-meta">' +
-              '<span class="badge period-badge">' + periodLabel(g.period) + '</span>' +
-              '<span class="days-left">' + daysLeft(g.period, g.periodStart) + '</span>' +
-            '</div>' +
+        '<div class="card-top">' +
+          '<div class="card-top-left">' +
+            '<span class="card-icon">' + icon + '</span>' +
+            '<span class="card-name">' + esc(g.name) + '</span>' +
           '</div>' +
-          '<button class="card-menu-btn" data-id="' + g.id + '" aria-label="Options">\u22EF</button>' +
+          '<div class="card-top-right">' +
+            '<span class="period-tag">' + periodLabel(g.period) + '</span>' +
+            '<button class="card-menu-btn" data-id="' + g.id + '" aria-label="Options">\u22EF</button>' +
+          '</div>' +
         '</div>' +
-        '<div class="progress-row">' +
-          '<div class="count-display">' +
-            '<span class="done">' + g.progress + '</span><span class="sep">/</span><span class="total">' + g.target + '</span>' +
-          '</div>' +
-          '<div class="pct-label' + (complete ? ' done-label' : '') + '">' + (complete ? '&#10003; Done!' : pct + '%') + '</div>' +
+        '<div class="card-numbers">' +
+          '<div class="card-big-num' + (complete ? ' complete-num' : '') + '">' + g.progress + '</div>' +
+          '<div class="card-sub">' + (complete ? '&#10003; Goal complete' : remaining + ' to go \u00B7 ' + daysLeft(g.period, g.periodStart)) + '</div>' +
         '</div>' +
         '<div class="progress-bar-track">' +
           '<div class="progress-bar-fill' + (complete ? ' full' : '') + '" style="width:' + pct + '%"></div>' +
         '</div>' +
-        '<div class="log-row">' +
-          '<button class="btn-plus' + (complete ? ' done-btn' : '') + '" data-id="' + g.id + '" aria-label="Tick one">' + (complete ? '\u2713' : '\u2713') + '</button>' +
-          '<div class="num-input-wrap">' +
-            '<input type="number" min="1" placeholder="How many\u2026" inputmode="numeric" data-id="' + g.id + '" class="num-input" />' +
-            '<button class="btn-add" data-id="' + g.id + '">Tick</button>' +
+        '<div class="card-foot">' +
+          '<div class="tick-input-wrap">' +
+            '<input type="number" min="1" placeholder="Enter amount\u2026" inputmode="numeric" data-id="' + g.id + '" class="num-input" />' +
+            '<button class="btn-tick-add" data-id="' + g.id + '">Tick</button>' +
           '</div>' +
+          '<button class="btn-tick' + (complete ? ' done-btn' : '') + '" data-id="' + g.id + '" aria-label="Tick one">\u2713</button>' +
         '</div>';
 
       list.appendChild(card);
     });
 
-    document.querySelectorAll('.btn-plus').forEach(function(btn) {
+    document.querySelectorAll('.btn-tick').forEach(function(btn) {
       btn.addEventListener('click', function() { addProgress(btn.dataset.id, 1); });
     });
-    document.querySelectorAll('.btn-add').forEach(function(btn) {
+    document.querySelectorAll('.btn-tick-add').forEach(function(btn) {
       btn.addEventListener('click', function() {
         var inp = document.querySelector('.num-input[data-id="' + btn.dataset.id + '"]');
         var val = parseInt(inp.value, 10);
