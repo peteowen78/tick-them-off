@@ -428,29 +428,41 @@
   // ── Auth ───────────────────────────────────────────────────────────────────
   var loginScreen = document.getElementById('login-screen');
 
-  // Handle redirect result on page load (for signInWithRedirect flow)
-  auth.getRedirectResult().then(function(result) {
-    if (result && result.user) {
-      // Successfully signed in via redirect — onAuthStateChanged will fire
-      toast('✅ Signed in as ' + result.user.displayName);
-    }
-  }).catch(function(err) {
-    console.error('Redirect sign-in error:', err);
-    toast('Sign-in error: ' + (err.code || err.message), 6000);
-  });
-
   document.getElementById('btn-google-signin').addEventListener('click', function() {
     var btn = this;
     btn.textContent = 'Signing in…';
     btn.disabled = true;
     var provider = new firebase.auth.GoogleAuthProvider();
-    // Use redirect (works on all browsers/devices including mobile)
-    auth.signInWithRedirect(provider).catch(function(err) {
-      console.error('Sign-in error:', err);
-      toast('Sign-in failed: ' + (err.code || err.message), 6000);
-      btn.textContent = 'Sign in with Google';
-      btn.disabled = false;
-    });
+
+    // Try popup first — works on desktop and modern mobile browsers
+    auth.signInWithPopup(provider)
+      .then(function(result) {
+        // onAuthStateChanged handles the rest
+      })
+      .catch(function(err) {
+        // Popup was blocked or closed — fall back to redirect
+        if (err.code === 'auth/popup-blocked' || err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') {
+          toast('Opening sign-in page…', 3000);
+          auth.signInWithRedirect(provider);
+        } else {
+          console.error('Sign-in error:', err);
+          toast('Sign-in failed: ' + (err.code || err.message), 6000);
+          btn.textContent = 'Sign in with Google';
+          btn.disabled = false;
+        }
+      });
+  });
+
+  // Handle redirect fallback result on page load
+  auth.getRedirectResult().then(function(result) {
+    if (result && result.user) {
+      toast('✅ Signed in as ' + result.user.displayName);
+    }
+  }).catch(function(err) {
+    if (err.code && err.code !== 'auth/no-auth-event') {
+      console.error('Redirect result error:', err);
+      toast('Sign-in error: ' + err.code, 6000);
+    }
   });
 
   auth.onAuthStateChanged(function(user) {
