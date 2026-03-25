@@ -432,18 +432,24 @@
   auth.getRedirectResult().then(function(result) {
     if (result && result.user) {
       // Successfully signed in via redirect — onAuthStateChanged will fire
+      toast('✅ Signed in as ' + result.user.displayName);
     }
   }).catch(function(err) {
     console.error('Redirect sign-in error:', err);
-    toast('Sign-in failed: ' + err.message);
+    toast('Sign-in error: ' + (err.code || err.message), 6000);
   });
 
   document.getElementById('btn-google-signin').addEventListener('click', function() {
+    var btn = this;
+    btn.textContent = 'Signing in…';
+    btn.disabled = true;
     var provider = new firebase.auth.GoogleAuthProvider();
     // Use redirect (works on all browsers/devices including mobile)
     auth.signInWithRedirect(provider).catch(function(err) {
       console.error('Sign-in error:', err);
-      toast('Sign-in failed. Please try again.');
+      toast('Sign-in failed: ' + (err.code || err.message), 6000);
+      btn.textContent = 'Sign in with Google';
+      btn.disabled = false;
     });
   });
 
@@ -812,12 +818,12 @@
 
   // ── Toast ──────────────────────────────────────────────────────────────────
   var toastTimer;
-  function toast(msg) {
+  function toast(msg, duration) {
     var el = document.getElementById('toast');
     el.textContent = msg;
     el.classList.add('show');
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(function() { el.classList.remove('show'); }, 5000);
+    toastTimer = setTimeout(function() { el.classList.remove('show'); }, duration || 5000);
   }
 
   // ── Helpers ────────────────────────────────────────────────────────────────
