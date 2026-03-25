@@ -508,7 +508,7 @@
         if (Array.isArray(data) && data.length > 0) {
           goals = data;
           localStorage.setItem(STORAGE_KEY, JSON.stringify(goals));
-          toast('✅ Loaded ' + goals.length + ' goal(s) [uid:' + uid.slice(-4) + ']');
+          toast('✅ Synced');
         } else if (data && typeof data === 'object' && Object.keys(data).length > 0) {
           goals = Object.values(data);
           localStorage.setItem(STORAGE_KEY, JSON.stringify(goals));
@@ -516,7 +516,7 @@
         } else {
           // Firebase empty — fall back to localStorage, don't wipe it
           try { goals = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch(e) { goals = []; }
-          toast('☁️ Nothing in Firebase [uid:' + uid.slice(-4) + '] — ' + (goals.length ? 'using local cache' : 'no data'));
+          if (!goals.length) toast('No goals yet — add your first one!');
         }
         render();
       })
@@ -534,7 +534,7 @@
       var uid = currentUser.uid;
       var path = 'users/' + uid + '/goals';
       db.ref(path).set(goalsToSave)
-        .then(function() { toast('✅ Saved ' + goalsToSave.length + ' goal(s) [uid:' + uid.slice(-4) + ']'); })
+        .then(function() { /* saved silently */ })
         .catch(function(err) {
           console.error('Firebase save error:', err);
           toast('❌ Save failed: ' + err.code);
