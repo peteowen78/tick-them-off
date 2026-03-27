@@ -60,7 +60,11 @@
     .user-btn img { width: 100%; height: 100%; object-fit: cover; }
 
     /* ── Goal list ── */
-    #goals-list { padding: 12px 16px 0; display: flex; flex-direction: column; gap: 10px; }
+    #goals-list { padding: 12px 16px 0; display: grid; grid-template-columns: 1fr; gap: 10px; }
+    @media (min-width: 680px) {
+      body { max-width: 900px; margin: 0 auto; }
+      #goals-list { grid-template-columns: repeat(2, 1fr); }
+    }
 
     /* ── Empty state ── */
     #empty-state { text-align: center; padding: 80px 24px; color: var(--muted); }
@@ -75,10 +79,10 @@
 
     .card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
     .card-top-left { display: flex; align-items: center; gap: 8px; min-width: 0; }
-    .card-icon { font-size: 1.3rem; line-height: 1; flex-shrink: 0; }
+    .card-icon { font-size: 1.3rem; line-height: 1; flex-shrink: 0; filter: grayscale(1) brightness(0.1); }
     .card-name { font-size: 0.85rem; font-weight: 800; letter-spacing: 0.02em; text-transform: uppercase; color: #000; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .card-top-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
-    .period-tag { font-size: 0.6rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(0,0,0,0.65); background: rgba(0,0,0,0.12); border-radius: 20px; padding: 3px 8px; }
+    .period-tag { font-size: 0.6rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(0,0,0,0.85); background: rgba(0,0,0,0.22); border-radius: 20px; padding: 3px 8px; }
 
     .card-numbers { margin-bottom: 10px; }
     .card-big-num { font-size: 4.5rem; font-weight: 900; letter-spacing: -0.05em; line-height: 0.9; color: #000; font-variant-numeric: tabular-nums; }
@@ -90,16 +94,16 @@
     .progress-bar-fill.full { background: #000; }
 
     .card-foot { display: flex; gap: 8px; align-items: center; }
-    .tick-input-wrap { flex: 1; background: rgba(0,0,0,0.12); border-radius: 50px; overflow: hidden; display: flex; align-items: center; padding: 0 4px 0 16px; }
+    .tick-input-wrap { flex: 1; background: rgba(0,0,0,0.22); border-radius: 50px; overflow: hidden; display: flex; align-items: center; padding: 0 4px 0 16px; }
     .tick-input-wrap input { flex: 1; background: none; border: none; color: #000; font-size: 0.9rem; padding: 11px 0; outline: none; font-family: inherit; width: 0; min-width: 0; font-variant-numeric: tabular-nums; }
-    .tick-input-wrap input::placeholder { color: rgba(0,0,0,0.4); font-size: 0.82rem; }
-    .btn-tick-add { background: rgba(0,0,0,0.12); border: none; color: rgba(0,0,0,0.6); font-size: 0.7rem; font-weight: 800; padding: 7px 12px; border-radius: 50px; cursor: pointer; text-transform: uppercase; letter-spacing: 0.05em; margin-right: 3px; white-space: nowrap; transition: color 0.1s; }
+    .tick-input-wrap input::placeholder { color: rgba(0,0,0,0.55); font-size: 0.82rem; }
+    .btn-tick-add { background: rgba(0,0,0,0.18); border: none; color: rgba(0,0,0,0.8); font-size: 0.7rem; font-weight: 800; padding: 7px 12px; border-radius: 50px; cursor: pointer; text-transform: uppercase; letter-spacing: 0.05em; margin-right: 3px; white-space: nowrap; transition: color 0.1s; }
     .btn-tick-add:active { color: #000; }
 
     .btn-tick { flex-shrink: 0; width: 50px; height: 50px; border-radius: 50%; border: none; background: #000; color: #fff; font-size: 1.3rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), opacity 0.1s; -webkit-user-select: none; user-select: none; }
     .btn-tick:active { transform: scale(0.85); opacity: 0.85; }
     .btn-tick.done-btn { background: #000; opacity: 0.5; }
-    .card-menu-btn { background: none; border: none; color: rgba(0,0,0,0.5); cursor: pointer; padding: 4px 6px; border-radius: 8px; font-size: 1rem; line-height: 1; }
+    .card-menu-btn { background: none; border: none; color: rgba(0,0,0,0.85); cursor: pointer; padding: 4px 6px; border-radius: 8px; font-size: 1.3rem; font-weight: 900; line-height: 1; letter-spacing: 0.05em; }
 
     /* ── FAB ── */
     #fab { position: fixed; bottom: 30px; right: 20px; width: 58px; height: 58px; border-radius: 50%; background: var(--text); border: none; color: #fff; font-size: 1.8rem; font-weight: 200; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 20px rgba(0,0,0,0.2); transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1); z-index: 20; }
