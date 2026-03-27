@@ -157,6 +157,22 @@
     .ctx-item:active { background: var(--surface2); }
     .ctx-item.danger { color: #c0392b; }
 
+    /* ── History screen ── */
+    #history-overlay { position: fixed; inset: 0; z-index: 150; display: flex; flex-direction: column; justify-content: flex-end; opacity: 0; pointer-events: none; transition: opacity 0.25s; }
+    #history-overlay.open { opacity: 1; pointer-events: all; }
+    #history-sheet { border-radius: 28px 28px 0 0; padding: 40px 24px 52px; transform: translateY(100%); transition: transform 0.38s cubic-bezier(0.34,1.05,0.64,1); min-height: 82vh; display: flex; flex-direction: column; position: relative; }
+    #history-overlay.open #history-sheet { transform: translateY(0); }
+    #history-close { position: absolute; top: 20px; right: 20px; width: 36px; height: 36px; border-radius: 50%; border: none; background: rgba(0,0,0,0.2); color: rgba(0,0,0,0.7); font-size: 1.2rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; }
+    #history-handle { width: 40px; height: 4px; border-radius: 2px; background: rgba(0,0,0,0.2); margin: 0 auto 28px; }
+    #history-dots { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; flex: 1; align-content: start; margin-bottom: 32px; }
+    .h-dot { border-radius: 50%; aspect-ratio: 1; transition: transform 0.15s; }
+    .h-dot.hit { background: rgba(0,0,0,0.62); }
+    .h-dot.miss { background: rgba(0,0,0,0.18); }
+    .h-dot.current { background: rgba(0,0,0,0.18); outline: 2.5px solid rgba(0,0,0,0.35); outline-offset: -1px; }
+    #history-count { font-size: 3.8rem; font-weight: 900; line-height: 1; letter-spacing: -0.05em; color: rgba(0,0,0,0.85); margin-top: auto; }
+    #history-sublabel { font-size: 0.95rem; font-weight: 600; color: rgba(0,0,0,0.55); margin-top: 6px; }
+    #history-none { font-size: 1rem; font-weight: 700; color: rgba(0,0,0,0.45); margin-top: auto; padding-bottom: 24px; }
+
     /* ── Toast ── */
     #toast { position: fixed; bottom: 110px; left: 50%; transform: translateX(-50%) translateY(16px); background: var(--text); color: #fff; border-radius: 40px; padding: 11px 22px; font-size: 0.88rem; font-weight: 700; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.2s, transform 0.25s cubic-bezier(0.34,1.3,0.64,1); z-index: 300; letter-spacing: -0.01em; }
     #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -254,9 +270,22 @@
 
   <!-- Context menu -->
   <div class="ctx-menu" id="ctx-menu">
+    <div class="ctx-item" id="ctx-history">📊 &nbsp;View history</div>
     <div class="ctx-item" id="ctx-edit">✏️ &nbsp;Edit goal</div>
     <div class="ctx-item" id="ctx-reset">🔄 &nbsp;Reset progress</div>
     <div class="ctx-item danger" id="ctx-delete">🗑️ &nbsp;Delete goal</div>
+  </div>
+
+  <!-- History screen -->
+  <div id="history-overlay">
+    <div id="history-sheet">
+      <div id="history-handle"></div>
+      <button id="history-close">&#x2715;</button>
+      <div id="history-dots"></div>
+      <div id="history-count"></div>
+      <div id="history-sublabel"></div>
+      <div id="history-none" style="display:none">No history yet — check back after your first period ends.</div>
+    </div>
   </div>
 
   <!-- Toast -->
@@ -576,7 +605,15 @@
 
   function checkReset(goal) {
     var current = periodStart(goal.period);
-    if (!goal.periodStart || goal.periodStart < current) { goal.periodStart = current; goal.progress = 0; }
+    if (!goal.periodStart || goal.periodStart < current) {
+      if (goal.periodStart) {
+        if (!goal.history) goal.history = [];
+        goal.history.push({ key: goal.periodStart, progress: goal.progress || 0, target: goal.target, hit: (goal.progress || 0) >= goal.target });
+        if (goal.history.length > 24) goal.history = goal.history.slice(-24);
+      }
+      goal.periodStart = current;
+      goal.progress = 0;
+    }
   }
 
   function checkAllResets() {
@@ -809,6 +846,45 @@
 
   document.addEventListener('click', function() { closeCtxMenu(); closeUserMenu(); });
 
+  // ── History ────────────────────────────────────────────────────────────────
+  function openHistory(id) {
+    var g = goals.find(function(x) { return x.id === id; });
+    if (!g) return;
+    var history = g.history || [];
+    var color   = g.color || COLORS[0];
+    var sheet   = document.getElementById('history-sheet');
+    var dotsEl  = document.getElementById('history-dots');
+    var countEl = document.getElementById('history-count');
+    var subEl   = document.getElementById('history-sublabel');
+    var noneEl  = document.getElementById('history-none');
+
+    sheet.style.background = color;
+
+    if (history.length === 0) {
+      dotsEl.innerHTML = '';
+      countEl.textContent = '';
+      subEl.textContent = '';
+      noneEl.style.display = '';
+    } else {
+      noneEl.style.display = 'none';
+      var display = history.slice(-24);
+      dotsEl.innerHTML = display.map(function(p) {
+        return '<div class="h-dot ' + (p.hit ? 'hit' : 'miss') + '"></div>';
+      }).join('') + '<div class="h-dot current"></div>';
+
+      var hits = history.filter(function(p) { return p.hit; }).length;
+      countEl.textContent = hits + ' out of ' + history.length;
+      subEl.textContent = (g.icon || '') + ' ' + g.name + ' \u00B7 ' + periodLabel(g.period);
+    }
+
+    document.getElementById('history-overlay').classList.add('open');
+  }
+
+  document.getElementById('history-close').addEventListener('click', function() {
+    document.getElementById('history-overlay').classList.remove('open');
+  });
+
+  document.getElementById('ctx-history').addEventListener('click', function() { if (ctxId) openHistory(ctxId); });
   document.getElementById('ctx-edit').addEventListener('click', function() { if (ctxId) openModal(ctxId); });
 
   document.getElementById('ctx-reset').addEventListener('click', function() {
