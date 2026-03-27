@@ -58,6 +58,10 @@
 
     /* ── Goal list ── */
     #goals-list { padding: 12px 16px 0; display: grid; grid-template-columns: 1fr; gap: 10px; }
+    @media (max-width: 479px) {
+      #goals-list { display: flex; flex-direction: column; gap: 0; padding-bottom: 0; }
+      .card { position: sticky; margin-bottom: 10px; }
+    }
     @media (min-width: 680px) {
       body { max-width: 900px; margin: 0 auto; }
       #goals-list { grid-template-columns: repeat(2, 1fr); }
@@ -623,7 +627,8 @@
       ? 'All done! You absolute legend. 🏆'
       : done + ' of ' + goals.length + ' goals smashed';
 
-    goals.forEach(function(g) {
+    var headerH = document.querySelector('header').offsetHeight;
+    goals.forEach(function(g, idx) {
       var pct      = Math.min(100, Math.round((g.progress / g.target) * 100));
       var complete = g.progress >= g.target;
       var color    = g.color || COLORS[0];
@@ -661,6 +666,10 @@
           '<button class="btn-tick' + (complete ? ' done-btn' : '') + '" data-id="' + g.id + '" aria-label="Tick one">\u2713</button>' +
         '</div>';
 
+      if (window.innerWidth < 480) {
+        card.style.top = (headerH + idx * 54) + 'px';
+        card.style.zIndex = idx + 1;
+      }
       list.appendChild(card);
     });
 
