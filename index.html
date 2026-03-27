@@ -69,38 +69,37 @@
     #empty-state p { font-size: 0.88rem; line-height: 1.6; }
 
     /* ── Goal card ── */
-    .card { background: var(--surface); border-radius: var(--radius); padding: 20px; position: relative; overflow: hidden; transition: transform 0.15s; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
-    .card.complete { background: #e6f0ea; }
+    .card { border-radius: var(--radius); padding: 20px; position: relative; overflow: hidden; transition: transform 0.15s; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
     @keyframes pop { 0%{transform:scale(1)} 40%{transform:scale(1.03)} 100%{transform:scale(1)} }
     .card.pop { animation: pop 0.3s ease; }
 
     .card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
     .card-top-left { display: flex; align-items: center; gap: 8px; min-width: 0; }
     .card-icon { font-size: 1.3rem; line-height: 1; flex-shrink: 0; }
-    .card-name { font-size: 0.85rem; font-weight: 800; letter-spacing: 0.02em; text-transform: uppercase; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .card-name { font-size: 0.85rem; font-weight: 800; letter-spacing: 0.02em; text-transform: uppercase; color: #000; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .card-top-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
-    .period-tag { font-size: 0.6rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); background: var(--surface2); border-radius: 20px; padding: 3px 8px; }
+    .period-tag { font-size: 0.6rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(0,0,0,0.65); background: rgba(0,0,0,0.12); border-radius: 20px; padding: 3px 8px; }
 
     .card-numbers { margin-bottom: 10px; }
-    .card-big-num { font-size: 4.5rem; font-weight: 900; letter-spacing: -0.05em; line-height: 0.9; color: var(--card-color, var(--text)); font-variant-numeric: tabular-nums; }
-    .card-big-num.complete-num { color: var(--success); }
-    .card-sub { font-size: 0.75rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 5px; }
+    .card-big-num { font-size: 4.5rem; font-weight: 900; letter-spacing: -0.05em; line-height: 0.9; color: #000; font-variant-numeric: tabular-nums; }
+    .card-big-num.complete-num { color: #000; }
+    .card-sub { font-size: 0.75rem; font-weight: 700; color: rgba(0,0,0,0.55); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 5px; }
 
-    .progress-bar-track { width: 100%; height: 3px; background: var(--surface2); border-radius: 4px; overflow: hidden; margin-bottom: 14px; }
-    .progress-bar-fill { height: 100%; border-radius: 4px; background: var(--card-color, var(--text)); transition: width 0.5s cubic-bezier(0.34,1.2,0.64,1); }
-    .progress-bar-fill.full { background: var(--success); }
+    .progress-bar-track { width: 100%; height: 3px; background: rgba(0,0,0,0.18); border-radius: 4px; overflow: hidden; margin-bottom: 14px; }
+    .progress-bar-fill { height: 100%; border-radius: 4px; background: #000; transition: width 0.5s cubic-bezier(0.34,1.2,0.64,1); }
+    .progress-bar-fill.full { background: #000; }
 
     .card-foot { display: flex; gap: 8px; align-items: center; }
-    .tick-input-wrap { flex: 1; background: var(--surface2); border-radius: 50px; overflow: hidden; display: flex; align-items: center; padding: 0 4px 0 16px; }
-    .tick-input-wrap input { flex: 1; background: none; border: none; color: var(--text); font-size: 0.9rem; padding: 11px 0; outline: none; font-family: inherit; width: 0; min-width: 0; font-variant-numeric: tabular-nums; }
-    .tick-input-wrap input::placeholder { color: var(--muted); font-size: 0.82rem; }
-    .btn-tick-add { background: var(--bg); border: none; color: var(--muted); font-size: 0.7rem; font-weight: 800; padding: 7px 12px; border-radius: 50px; cursor: pointer; text-transform: uppercase; letter-spacing: 0.05em; margin-right: 3px; white-space: nowrap; transition: color 0.1s; }
-    .btn-tick-add:active { color: var(--text); }
+    .tick-input-wrap { flex: 1; background: rgba(0,0,0,0.12); border-radius: 50px; overflow: hidden; display: flex; align-items: center; padding: 0 4px 0 16px; }
+    .tick-input-wrap input { flex: 1; background: none; border: none; color: #000; font-size: 0.9rem; padding: 11px 0; outline: none; font-family: inherit; width: 0; min-width: 0; font-variant-numeric: tabular-nums; }
+    .tick-input-wrap input::placeholder { color: rgba(0,0,0,0.4); font-size: 0.82rem; }
+    .btn-tick-add { background: rgba(0,0,0,0.12); border: none; color: rgba(0,0,0,0.6); font-size: 0.7rem; font-weight: 800; padding: 7px 12px; border-radius: 50px; cursor: pointer; text-transform: uppercase; letter-spacing: 0.05em; margin-right: 3px; white-space: nowrap; transition: color 0.1s; }
+    .btn-tick-add:active { color: #000; }
 
-    .btn-tick { flex-shrink: 0; width: 50px; height: 50px; border-radius: 50%; border: none; background: var(--card-color, var(--text)); color: #fff; font-size: 1.3rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), opacity 0.1s; -webkit-user-select: none; user-select: none; }
+    .btn-tick { flex-shrink: 0; width: 50px; height: 50px; border-radius: 50%; border: none; background: #000; color: #fff; font-size: 1.3rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), opacity 0.1s; -webkit-user-select: none; user-select: none; }
     .btn-tick:active { transform: scale(0.85); opacity: 0.85; }
-    .btn-tick.done-btn { background: var(--success); }
-    .card-menu-btn { background: none; border: none; color: var(--muted); cursor: pointer; padding: 4px 6px; border-radius: 8px; font-size: 1rem; line-height: 1; }
+    .btn-tick.done-btn { background: #000; opacity: 0.5; }
+    .card-menu-btn { background: none; border: none; color: rgba(0,0,0,0.5); cursor: pointer; padding: 4px 6px; border-radius: 8px; font-size: 1rem; line-height: 1; }
 
     /* ── FAB ── */
     #fab { position: fixed; bottom: 30px; right: 20px; width: 58px; height: 58px; border-radius: 50%; background: var(--text); border: none; color: #fff; font-size: 1.8rem; font-weight: 200; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 20px rgba(0,0,0,0.2); transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1); z-index: 20; }
@@ -122,11 +121,6 @@
     .emoji-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; }
     .emoji-opt { font-size: 1.4rem; text-align: center; padding: 6px; border-radius: 10px; cursor: pointer; transition: background 0.1s; }
     .emoji-opt:active { background: var(--border); }
-
-    .color-row { display: flex; gap: 8px; flex-wrap: wrap; }
-    .color-swatch { width: 30px; height: 30px; border-radius: 50%; cursor: pointer; border: 2.5px solid transparent; transition: transform 0.15s; }
-    .color-swatch:active { transform: scale(0.85); }
-    .color-swatch.selected { border-color: var(--text); transform: scale(1.1); }
 
     .field { margin-bottom: 18px; }
     .field label { display: block; font-size: 0.7rem; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 8px; }
@@ -251,10 +245,6 @@
         </div>
       </div>
 
-      <div class="field">
-        <label>Colour</label>
-        <div class="color-row" id="color-row"></div>
-      </div>
 
       <div class="modal-actions">
         <button class="btn-cancel" id="modal-cancel">Cancel</button>
@@ -309,16 +299,13 @@
 
   // ── Palette ─────────────────────────────────────────────────────────────────
   var COLORS = [
-    '#c0704a', // terracotta
-    '#6a9870', // sage green
-    '#c8a028', // ochre
-    '#5a7aaa', // dusty blue
-    '#b87070', // dusty rose
-    '#4a7858', // forest green
-    '#9a6888', // mauve
-    '#3a8888', // warm teal
-    '#8a6040', // burnt sienna
-    '#7a7aaa', // lavender grey
+    '#364F4C',
+    '#687063',
+    '#728267',
+    '#747474',
+    '#853A3E',
+    '#896766',
+    '#A9BBAF',
   ];
   var EMOJIS = ['🎯','💪','🏃','🚴','🏊','🧘','⚽','🏋️','📚','✍️','🎸','🎨','🧗','🤸','🥊','🏄','🎾','🧠','💤','🥗','💧','🍎','🚶','🛠️','🌿','🔥','⚡','🦾','🏆','🎖️'];
 
@@ -360,7 +347,6 @@
     }
     return null;
   }
-  var selectedColor = COLORS[0];
   var selectedEmoji = '🎯';
 
   // Build emoji grid
@@ -382,19 +368,6 @@
     document.getElementById('emoji-grid-wrap').classList.toggle('open');
   });
 
-  // Build colour swatches
-  var colorRow = document.getElementById('color-row');
-  COLORS.forEach(function(c) {
-    var sw = document.createElement('div');
-    sw.className = 'color-swatch' + (c === selectedColor ? ' selected' : '');
-    sw.style.background = c;
-    sw.dataset.color = c;
-    sw.addEventListener('click', function() {
-      selectedColor = c;
-      document.querySelectorAll('.color-swatch').forEach(function(s) { s.classList.toggle('selected', s.dataset.color === c); });
-    });
-    colorRow.appendChild(sw);
-  });
 
   // ── Confetti ────────────────────────────────────────────────────────────────
   var canvas  = document.getElementById('confetti-canvas');
@@ -652,7 +625,7 @@
       var card = document.createElement('div');
       card.className  = 'card' + (complete ? ' complete' : '');
       card.dataset.id = g.id;
-      card.style.setProperty('--card-color', color);
+      card.style.background = color;
 
       var remaining = Math.max(0, g.target - g.progress);
       card.innerHTML =
@@ -752,7 +725,6 @@
       targetInp.value   = g.target;
       selectedPeriod    = g.period;
       selectedEmoji     = g.icon  || '🎯';
-      selectedColor     = g.color || COLORS[0];
       emojiManuallySet  = true;
     } else {
       title.textContent = 'New Goal';
@@ -760,11 +732,9 @@
       targetInp.value   = '';
       selectedPeriod    = 'weekly';
       selectedEmoji     = EMOJIS[Math.floor(Math.random() * 6)];
-      selectedColor     = COLORS[Math.floor(Math.random() * COLORS.length)];
     }
 
     document.getElementById('emoji-display').textContent = selectedEmoji;
-    document.querySelectorAll('.color-swatch').forEach(function(s) { s.classList.toggle('selected', s.dataset.color === selectedColor); });
     updatePeriodBtns();
     validateModal();
     overlay.classList.add('open');
@@ -818,11 +788,10 @@
       var g = goals.find(function(x) { return x.id === editingId; });
       g.name  = name;
       g.icon  = selectedEmoji;
-      g.color = selectedColor;
       if (g.target !== target) g.target = target;
       if (g.period !== selectedPeriod) { g.period = selectedPeriod; g.periodStart = periodStart(selectedPeriod); g.progress = 0; }
     } else {
-      goals.push({ id: crypto.randomUUID(), name: name, icon: selectedEmoji, color: selectedColor, target: target, period: selectedPeriod, periodStart: periodStart(selectedPeriod), progress: 0, createdAt: Date.now() });
+      goals.push({ id: crypto.randomUUID(), name: name, icon: selectedEmoji, color: COLORS[Math.floor(Math.random() * COLORS.length)], target: target, period: selectedPeriod, periodStart: periodStart(selectedPeriod), progress: 0, createdAt: Date.now() });
     }
 
     save(goals);
