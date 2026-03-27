@@ -526,6 +526,7 @@
           try { goals = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch(e) { goals = []; }
           if (!goals.length) toast('No goals yet — add your first one!');
         }
+        fixEmojiSuggestions();
         render();
       })
       .catch(function(err) {
@@ -597,6 +598,20 @@
   function checkAllResets() {
     var changed = false;
     goals.forEach(function(g) { var p = g.progress; checkReset(g); if (g.progress !== p) changed = true; });
+    if (changed) save(goals);
+  }
+
+  // ── Fix emoji for existing goals ────────────────────────────────────────────
+  function fixEmojiSuggestions() {
+    var changed = false;
+    goals.forEach(function(g) {
+      var suggested = suggestEmoji(g.name);
+      // Only auto-correct if the icon looks like a random default, not a deliberate pick
+      if (suggested && g.icon !== suggested && EMOJIS.indexOf(g.icon) !== -1) {
+        g.icon = suggested;
+        changed = true;
+      }
+    });
     if (changed) save(goals);
   }
 
@@ -735,7 +750,7 @@
       nameInp.value     = '';
       targetInp.value   = '';
       selectedPeriod    = 'weekly';
-      selectedEmoji     = EMOJIS[Math.floor(Math.random() * 6)];
+      selectedEmoji     = '🎯';
     }
 
     document.getElementById('emoji-display').textContent = selectedEmoji;
@@ -795,7 +810,7 @@
       if (g.target !== target) g.target = target;
       if (g.period !== selectedPeriod) { g.period = selectedPeriod; g.periodStart = periodStart(selectedPeriod); g.progress = 0; }
     } else {
-      goals.push({ id: crypto.randomUUID(), name: name, icon: selectedEmoji, color: COLORS[Math.floor(Math.random() * COLORS.length)], target: target, period: selectedPeriod, periodStart: periodStart(selectedPeriod), progress: 0, createdAt: Date.now() });
+      goals.push({ id: crypto.randomUUID(), name: name, icon: suggestEmoji(name) || selectedEmoji, color: COLORS[Math.floor(Math.random() * COLORS.length)], target: target, period: selectedPeriod, periodStart: periodStart(selectedPeriod), progress: 0, createdAt: Date.now() });
     }
 
     save(goals);
