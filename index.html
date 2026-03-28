@@ -719,7 +719,9 @@
         toast('+' + amount + ' — ' + remaining + ' to go. ' + msg);
       }
     }
+    var scrollY = window.scrollY;
     render();
+    window.scrollTo(0, scrollY);
   }
 
   // ── Goal modal ─────────────────────────────────────────────────────────────
