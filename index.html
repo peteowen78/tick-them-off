@@ -120,7 +120,7 @@
     .modal-overlay.open { opacity: 1; pointer-events: all; }
     .modal { background: var(--surface); border-radius: 28px 28px 0 0; padding: 24px 20px 44px; width: 100%; transform: translateY(100%); transition: transform 0.35s cubic-bezier(0.34,1.1,0.64,1); }
     .modal-overlay.open .modal { transform: translateY(0); }
-    .modal-handle { width: 40px; height: 4px; border-radius: 2px; background: var(--border); margin: 0 auto 22px; }
+    .modal-handle { width: 40px; height: 4px; border-radius: 2px; background: var(--border); margin: 0 auto 22px; cursor: grab; padding: 12px 40px; box-sizing: content-box; background-clip: content-box; }
     .modal h2 { font-size: 1.4rem; font-weight: 900; margin-bottom: 22px; letter-spacing: -0.04em; }
 
     .emoji-row { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
@@ -911,6 +911,45 @@
   document.getElementById('modal-overlay').addEventListener('click', function(e) {
     if (e.target === document.getElementById('modal-overlay')) closeModal();
   });
+
+  // ── Swipe-to-dismiss for modal and history sheet ────────────────────────
+  function makeSwipeDismissible(handleEl, sheetEl, closeFn) {
+    handleEl.addEventListener('pointerdown', function(e) {
+      var startY = e.clientY;
+      handleEl.setPointerCapture(e.pointerId);
+      sheetEl.style.transition = 'none';
+
+      function onMove(e) {
+        var dy = Math.max(0, e.clientY - startY);
+        sheetEl.style.transform = 'translateY(' + dy + 'px)';
+      }
+      function onUp(e) {
+        sheetEl.style.transition = '';
+        var dy = Math.max(0, e.clientY - startY);
+        if (dy > 120) {
+          sheetEl.style.transform = '';
+          closeFn();
+        } else {
+          sheetEl.style.transform = '';
+        }
+        handleEl.removeEventListener('pointermove', onMove);
+        handleEl.removeEventListener('pointerup', onUp);
+      }
+      handleEl.addEventListener('pointermove', onMove);
+      handleEl.addEventListener('pointerup', onUp);
+    });
+  }
+
+  makeSwipeDismissible(
+    document.querySelector('.modal-handle'),
+    document.querySelector('.modal'),
+    closeModal
+  );
+  makeSwipeDismissible(
+    document.getElementById('history-handle'),
+    document.getElementById('history-sheet'),
+    function() { document.getElementById('history-overlay').classList.remove('open'); }
+  );
   document.querySelectorAll('.period-btn').forEach(function(btn) {
     btn.addEventListener('click', function() { selectedPeriod = btn.dataset.period; updatePeriodBtns(); });
   });
