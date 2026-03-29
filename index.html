@@ -106,6 +106,11 @@
     .btn-tick:active { transform: scale(0.85); opacity: 0.85; }
     .btn-tick.done-btn { background: #000; opacity: 0.5; }
     .card-menu-btn { background: none; border: none; color: rgba(0,0,0,0.85); cursor: pointer; padding: 4px 6px; border-radius: 8px; font-size: 1.3rem; font-weight: 900; line-height: 1; letter-spacing: 0.05em; }
+    .drag-handle { cursor: grab; padding: 4px 10px 4px 0; color: rgba(0,0,0,0.3); font-size: 1rem; line-height: 1; touch-action: none; flex-shrink: 0; user-select: none; -webkit-user-select: none; display: flex; align-items: center; }
+    .drag-handle:active { cursor: grabbing; }
+    .card.dragging { opacity: 0.45; transform: scale(0.97); box-shadow: 0 8px 32px rgba(0,0,0,0.18); transition: none !important; }
+    .card.drag-over-above { box-shadow: 0 -3px 0 0 rgba(0,0,0,0.5); }
+    .card.drag-over-below { box-shadow: 0 3px 0 0 rgba(0,0,0,0.5); }
 
     /* ── FAB ── */
     #fab { display: none; }
@@ -650,6 +655,7 @@
       card.innerHTML =
         '<div class="card-top">' +
           '<div class="card-top-left">' +
+            '<span class="drag-handle" aria-label="Drag to reorder">⠿</span>' +
             '<span class="card-icon">' + icon + '</span>' +
             '<span class="card-name">' + esc(g.name) + '</span>' +
           '</div>' +
@@ -693,6 +699,75 @@
     });
     document.querySelectorAll('.card-menu-btn').forEach(function(btn) {
       btn.addEventListener('click', function(e) { openCtxMenu(e, btn.dataset.id); });
+    });
+
+    // ── Drag to reorder ──────────────────────────────────────────────────────
+    var draggingCard = null;
+    var dragOverCard = null;
+
+    document.querySelectorAll('.drag-handle').forEach(function(handle) {
+      handle.addEventListener('pointerdown', function(e) {
+        e.preventDefault();
+        var card = handle.closest('.card');
+        draggingCard = card;
+        card.classList.add('dragging');
+        handle.setPointerCapture(e.pointerId);
+
+        function onMove(e) {
+          if (!draggingCard) return;
+          var list = document.getElementById('goals-list');
+          var cards = Array.from(list.querySelectorAll('.card:not(.dragging)'));
+          var target = null;
+          var insertBefore = true;
+          cards.forEach(function(c) {
+            var rect = c.getBoundingClientRect();
+            if (e.clientY >= rect.top && e.clientY < rect.bottom) {
+              target = c;
+              insertBefore = e.clientY < rect.top + rect.height / 2;
+            }
+          });
+          if (dragOverCard) {
+            dragOverCard.classList.remove('drag-over-above', 'drag-over-below');
+          }
+          if (target) {
+            dragOverCard = target;
+            target.classList.add(insertBefore ? 'drag-over-above' : 'drag-over-below');
+          } else {
+            dragOverCard = null;
+          }
+        }
+
+        function onUp() {
+          if (!draggingCard) return;
+          draggingCard.classList.remove('dragging');
+          if (dragOverCard) {
+            var list = document.getElementById('goals-list');
+            var cards = Array.from(list.querySelectorAll('.card'));
+            var draggingIdx = cards.indexOf(draggingCard);
+            var targetIdx   = cards.indexOf(dragOverCard);
+            var above = dragOverCard.classList.contains('drag-over-above');
+            dragOverCard.classList.remove('drag-over-above', 'drag-over-below');
+            if (above) {
+              list.insertBefore(draggingCard, dragOverCard);
+            } else {
+              list.insertBefore(draggingCard, dragOverCard.nextSibling);
+            }
+            // Sync goals array to new DOM order
+            var newCards = Array.from(list.querySelectorAll('.card'));
+            goals = newCards.map(function(c) {
+              return goals.find(function(g) { return g.id === c.dataset.id; });
+            }).filter(Boolean);
+            save(goals);
+          }
+          draggingCard = null;
+          dragOverCard = null;
+          handle.removeEventListener('pointermove', onMove);
+          handle.removeEventListener('pointerup', onUp);
+        }
+
+        handle.addEventListener('pointermove', onMove);
+        handle.addEventListener('pointerup', onUp);
+      });
     });
   }
 
