@@ -110,8 +110,7 @@
     .card.drag-ready { transform: scale(1.02); box-shadow: 0 8px 28px rgba(0,0,0,0.18); transition: transform 0.15s, box-shadow 0.15s; }
     .card.drag-placeholder { opacity: 0; pointer-events: none; touch-action: none; }
     .card-ghost { position: fixed; pointer-events: none; z-index: 999; border-radius: var(--radius); box-shadow: 0 16px 48px rgba(0,0,0,0.28); transform: scale(1.04) rotate(1.5deg); opacity: 0.96; transition: none; }
-    .card.drag-over-above { box-shadow: 0 -4px 0 0 rgba(0,0,0,0.7); }
-    .card.drag-over-below { box-shadow: 0 4px 0 0 rgba(0,0,0,0.7); }
+    .drop-indicator { height: 4px; background: var(--text); border-radius: 4px; margin: 0 4px; pointer-events: none; }
 
     /* ── FAB ── */
     #fab { display: none; }
@@ -743,7 +742,11 @@
       var offsetX = startEvent.clientX - rect.left;
       var offsetY = startEvent.clientY - rect.top;
 
-      // Brief pulse to confirm drag started
+      // Block text selection on the whole page while dragging
+      document.body.style.userSelect = 'none';
+      document.body.style.webkitUserSelect = 'none';
+
+      // Brief pulse + haptic to confirm drag started
       card.classList.add('drag-ready');
       if (navigator.vibrate) navigator.vibrate(40);
       setTimeout(function() { card.classList.remove('drag-ready'); }, 150);
@@ -758,12 +761,15 @@
       ghost.style.top        = rect.top  + 'px';
       document.body.appendChild(ghost);
 
+      // Visible drop indicator bar
+      var indicator = document.createElement('div');
+      indicator.className = 'drop-indicator';
+
       card.classList.add('drag-placeholder');
       card.setPointerCapture(startEvent.pointerId);
 
-      var dragOverCard = null;
-
       function onMove(e) {
+        e.preventDefault();
         ghost.style.left = (e.clientX - offsetX) + 'px';
         ghost.style.top  = (e.clientY - offsetY) + 'px';
 
@@ -776,20 +782,30 @@
             insertBefore = e.clientY < r.top + r.height / 2;
           }
         });
-        if (dragOverCard) dragOverCard.classList.remove('drag-over-above', 'drag-over-below');
-        dragOverCard = target;
-        if (target) target.classList.add(insertBefore ? 'drag-over-above' : 'drag-over-below');
+
+        // Move the indicator bar to the drop position
+        if (target) {
+          if (insertBefore) target.before(indicator);
+          else              target.after(indicator);
+        } else {
+          indicator.remove();
+        }
       }
 
       function onUp() {
+        // Restore text selection
+        document.body.style.userSelect = '';
+        document.body.style.webkitUserSelect = '';
+
         ghost.remove();
         card.classList.remove('drag-placeholder');
-        if (dragOverCard) {
-          var above = dragOverCard.classList.contains('drag-over-above');
-          dragOverCard.classList.remove('drag-over-above', 'drag-over-below');
-          if (above) list.insertBefore(card, dragOverCard);
-          else        list.insertBefore(card, dragOverCard.nextSibling);
+
+        // Insert card where indicator is, then remove indicator
+        if (indicator.parentNode) {
+          indicator.parentNode.insertBefore(card, indicator);
+          indicator.remove();
         }
+
         var newCards = Array.from(list.querySelectorAll('.card'));
         goals = newCards.map(function(c) {
           return goals.find(function(g) { return g.id === c.dataset.id; });
