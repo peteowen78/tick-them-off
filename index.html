@@ -106,9 +106,9 @@
     .btn-tick:active { transform: scale(0.85); opacity: 0.85; }
     .btn-tick.done-btn { background: #000; opacity: 0.5; }
     .card-menu-btn { background: none; border: none; color: rgba(0,0,0,0.85); cursor: pointer; padding: 4px 6px; border-radius: 8px; font-size: 1.3rem; font-weight: 900; line-height: 1; letter-spacing: 0.05em; }
-    .drag-handle { cursor: grab; padding: 4px 10px 4px 0; color: rgba(0,0,0,0.3); font-size: 1rem; line-height: 1; touch-action: none; flex-shrink: 0; user-select: none; -webkit-user-select: none; display: flex; align-items: center; }
-    .drag-handle:active { cursor: grabbing; }
-    .card.drag-placeholder { opacity: 0; pointer-events: none; }
+    .card { touch-action: pan-y; }
+    .card.drag-ready { transform: scale(1.02); box-shadow: 0 8px 28px rgba(0,0,0,0.18); transition: transform 0.15s, box-shadow 0.15s; }
+    .card.drag-placeholder { opacity: 0; pointer-events: none; touch-action: none; }
     .card-ghost { position: fixed; pointer-events: none; z-index: 999; border-radius: var(--radius); box-shadow: 0 16px 48px rgba(0,0,0,0.28); transform: scale(1.04) rotate(1.5deg); opacity: 0.96; transition: none; }
     .card.drag-over-above { box-shadow: 0 -4px 0 0 rgba(0,0,0,0.7); }
     .card.drag-over-below { box-shadow: 0 4px 0 0 rgba(0,0,0,0.7); }
@@ -656,7 +656,6 @@
       card.innerHTML =
         '<div class="card-top">' +
           '<div class="card-top-left">' +
-            '<span class="drag-handle" aria-label="Drag to reorder">⠿</span>' +
             '<span class="card-icon">' + icon + '</span>' +
             '<span class="card-name">' + esc(g.name) + '</span>' +
           '</div>' +
@@ -702,78 +701,107 @@
       btn.addEventListener('click', function(e) { openCtxMenu(e, btn.dataset.id); });
     });
 
-    // ── Drag to reorder ──────────────────────────────────────────────────────
-    document.querySelectorAll('.drag-handle').forEach(function(handle) {
-      handle.addEventListener('pointerdown', function(e) {
-        e.preventDefault();
-        var card    = handle.closest('.card');
-        var list    = document.getElementById('goals-list');
-        var rect    = card.getBoundingClientRect();
-        var offsetX = e.clientX - rect.left;
-        var offsetY = e.clientY - rect.top;
+    // ── Drag to reorder (long press) ─────────────────────────────────────────
+    document.querySelectorAll('.card').forEach(function(card) {
+      var pressTimer = null;
+      var startX, startY;
 
-        // Create floating ghost
-        var ghost = card.cloneNode(true);
-        ghost.className = 'card card-ghost';
-        ghost.style.width      = rect.width + 'px';
-        ghost.style.height     = rect.height + 'px';
-        ghost.style.background = card.style.background;
-        ghost.style.left       = rect.left + 'px';
-        ghost.style.top        = rect.top  + 'px';
-        document.body.appendChild(ghost);
+      card.addEventListener('pointerdown', function(e) {
+        // Only start timer on the card itself, not on interactive children
+        if (e.target.closest('button, input')) return;
+        startX = e.clientX;
+        startY = e.clientY;
 
-        // Hide original in place as a spacer
-        card.classList.add('drag-placeholder');
-        handle.setPointerCapture(e.pointerId);
+        pressTimer = setTimeout(function() {
+          pressTimer = null;
+          beginDrag(e, card);
+        }, 400);
+      });
 
-        var dragOverCard = null;
-
-        function onMove(e) {
-          // Move ghost with pointer
-          ghost.style.left = (e.clientX - offsetX) + 'px';
-          ghost.style.top  = (e.clientY - offsetY) + 'px';
-
-          // Find which card to insert before/after
-          var cards = Array.from(list.querySelectorAll('.card:not(.drag-placeholder)'));
-          var target = null, insertBefore = true;
-          cards.forEach(function(c) {
-            var r = c.getBoundingClientRect();
-            if (e.clientY >= r.top && e.clientY < r.bottom) {
-              target = c;
-              insertBefore = e.clientY < r.top + r.height / 2;
-            }
-          });
-          if (dragOverCard) dragOverCard.classList.remove('drag-over-above', 'drag-over-below');
-          dragOverCard = target;
-          if (target) target.classList.add(insertBefore ? 'drag-over-above' : 'drag-over-below');
+      card.addEventListener('pointermove', function(e) {
+        if (!pressTimer) return;
+        if (Math.abs(e.clientX - startX) > 8 || Math.abs(e.clientY - startY) > 8) {
+          clearTimeout(pressTimer);
+          pressTimer = null;
         }
+      });
 
-        function onUp() {
-          ghost.remove();
-          card.classList.remove('drag-placeholder');
+      card.addEventListener('pointerup', function() {
+        clearTimeout(pressTimer);
+        pressTimer = null;
+      });
 
-          if (dragOverCard) {
-            var above = dragOverCard.classList.contains('drag-over-above');
-            dragOverCard.classList.remove('drag-over-above', 'drag-over-below');
-            if (above) list.insertBefore(card, dragOverCard);
-            else        list.insertBefore(card, dragOverCard.nextSibling);
-          }
-
-          // Sync goals array to new DOM order
-          var newCards = Array.from(list.querySelectorAll('.card'));
-          goals = newCards.map(function(c) {
-            return goals.find(function(g) { return g.id === c.dataset.id; });
-          }).filter(Boolean);
-          save(goals);
-
-          handle.removeEventListener('pointermove', onMove);
-          handle.removeEventListener('pointerup', onUp);
-        }
-
-        handle.addEventListener('pointermove', onMove);
-        handle.addEventListener('pointerup', onUp);
+      card.addEventListener('pointercancel', function() {
+        clearTimeout(pressTimer);
+        pressTimer = null;
       });
     });
+
+    function beginDrag(startEvent, card) {
+      var list    = document.getElementById('goals-list');
+      var rect    = card.getBoundingClientRect();
+      var offsetX = startEvent.clientX - rect.left;
+      var offsetY = startEvent.clientY - rect.top;
+
+      // Brief pulse to confirm drag started
+      card.classList.add('drag-ready');
+      if (navigator.vibrate) navigator.vibrate(40);
+      setTimeout(function() { card.classList.remove('drag-ready'); }, 150);
+
+      // Floating ghost
+      var ghost = card.cloneNode(true);
+      ghost.className = 'card card-ghost';
+      ghost.style.width      = rect.width + 'px';
+      ghost.style.height     = rect.height + 'px';
+      ghost.style.background = card.style.background;
+      ghost.style.left       = rect.left + 'px';
+      ghost.style.top        = rect.top  + 'px';
+      document.body.appendChild(ghost);
+
+      card.classList.add('drag-placeholder');
+      card.setPointerCapture(startEvent.pointerId);
+
+      var dragOverCard = null;
+
+      function onMove(e) {
+        ghost.style.left = (e.clientX - offsetX) + 'px';
+        ghost.style.top  = (e.clientY - offsetY) + 'px';
+
+        var cards = Array.from(list.querySelectorAll('.card:not(.drag-placeholder)'));
+        var target = null, insertBefore = true;
+        cards.forEach(function(c) {
+          var r = c.getBoundingClientRect();
+          if (e.clientY >= r.top && e.clientY < r.bottom) {
+            target = c;
+            insertBefore = e.clientY < r.top + r.height / 2;
+          }
+        });
+        if (dragOverCard) dragOverCard.classList.remove('drag-over-above', 'drag-over-below');
+        dragOverCard = target;
+        if (target) target.classList.add(insertBefore ? 'drag-over-above' : 'drag-over-below');
+      }
+
+      function onUp() {
+        ghost.remove();
+        card.classList.remove('drag-placeholder');
+        if (dragOverCard) {
+          var above = dragOverCard.classList.contains('drag-over-above');
+          dragOverCard.classList.remove('drag-over-above', 'drag-over-below');
+          if (above) list.insertBefore(card, dragOverCard);
+          else        list.insertBefore(card, dragOverCard.nextSibling);
+        }
+        var newCards = Array.from(list.querySelectorAll('.card'));
+        goals = newCards.map(function(c) {
+          return goals.find(function(g) { return g.id === c.dataset.id; });
+        }).filter(Boolean);
+        save(goals);
+        card.removeEventListener('pointermove', onMove);
+        card.removeEventListener('pointerup', onUp);
+      }
+
+      card.addEventListener('pointermove', onMove);
+      card.addEventListener('pointerup', onUp);
+    }
   }
 
   // ── Progress ───────────────────────────────────────────────────────────────
