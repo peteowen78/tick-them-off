@@ -169,6 +169,7 @@
     .h-dot.hit { background: rgba(0,0,0,0.62); }
     .h-dot.miss { background: rgba(0,0,0,0.18); }
     .h-dot.current { background: rgba(0,0,0,0.18); outline: 2.5px solid rgba(0,0,0,0.35); outline-offset: -1px; }
+    .h-dot.current.hit { background: rgba(0,0,0,0.62); outline: 2.5px solid rgba(0,0,0,0.62); }
     #history-count { font-size: 3.8rem; font-weight: 900; line-height: 1; letter-spacing: -0.05em; color: rgba(0,0,0,0.85); margin-top: auto; }
     #history-sublabel { font-size: 0.95rem; font-weight: 600; color: rgba(0,0,0,0.55); margin-top: 6px; }
     #history-none { font-size: 1rem; font-weight: 700; color: rgba(0,0,0,0.45); margin-top: auto; padding-bottom: 24px; }
@@ -860,12 +861,13 @@
     } else {
       noneEl.style.display = 'none';
       var display = history.slice(-24);
+      var currentHit = g.progress >= g.target;
       dotsEl.innerHTML = display.map(function(p) {
         return '<div class="h-dot ' + (p.hit ? 'hit' : 'miss') + '"></div>';
-      }).join('') + '<div class="h-dot current"></div>';
+      }).join('') + '<div class="h-dot current' + (currentHit ? ' hit' : '') + '"></div>';
 
-      var hits = history.filter(function(p) { return p.hit; }).length;
-      countEl.textContent = hits + ' out of ' + history.length;
+      var hits = history.filter(function(p) { return p.hit; }).length + (currentHit ? 1 : 0);
+      countEl.textContent = hits + ' out of ' + (history.length + 1);
       subEl.textContent = (g.icon || '') + ' ' + g.name + ' \u00B7 ' + periodLabel(g.period);
     }
 
