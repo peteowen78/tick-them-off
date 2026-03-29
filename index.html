@@ -108,9 +108,10 @@
     .card-menu-btn { background: none; border: none; color: rgba(0,0,0,0.85); cursor: pointer; padding: 4px 6px; border-radius: 8px; font-size: 1.3rem; font-weight: 900; line-height: 1; letter-spacing: 0.05em; }
     .drag-handle { cursor: grab; padding: 4px 10px 4px 0; color: rgba(0,0,0,0.3); font-size: 1rem; line-height: 1; touch-action: none; flex-shrink: 0; user-select: none; -webkit-user-select: none; display: flex; align-items: center; }
     .drag-handle:active { cursor: grabbing; }
-    .card.dragging { opacity: 0.45; transform: scale(0.97); box-shadow: 0 8px 32px rgba(0,0,0,0.18); transition: none !important; }
-    .card.drag-over-above { box-shadow: 0 -3px 0 0 rgba(0,0,0,0.5); }
-    .card.drag-over-below { box-shadow: 0 3px 0 0 rgba(0,0,0,0.5); }
+    .card.drag-placeholder { opacity: 0; pointer-events: none; }
+    .card-ghost { position: fixed; pointer-events: none; z-index: 999; border-radius: var(--radius); box-shadow: 0 16px 48px rgba(0,0,0,0.28); transform: scale(1.04) rotate(1.5deg); opacity: 0.96; transition: none; }
+    .card.drag-over-above { box-shadow: 0 -4px 0 0 rgba(0,0,0,0.7); }
+    .card.drag-over-below { box-shadow: 0 4px 0 0 rgba(0,0,0,0.7); }
 
     /* ── FAB ── */
     #fab { display: none; }
@@ -702,65 +703,69 @@
     });
 
     // ── Drag to reorder ──────────────────────────────────────────────────────
-    var draggingCard = null;
-    var dragOverCard = null;
-
     document.querySelectorAll('.drag-handle').forEach(function(handle) {
       handle.addEventListener('pointerdown', function(e) {
         e.preventDefault();
-        var card = handle.closest('.card');
-        draggingCard = card;
-        card.classList.add('dragging');
+        var card    = handle.closest('.card');
+        var list    = document.getElementById('goals-list');
+        var rect    = card.getBoundingClientRect();
+        var offsetX = e.clientX - rect.left;
+        var offsetY = e.clientY - rect.top;
+
+        // Create floating ghost
+        var ghost = card.cloneNode(true);
+        ghost.className = 'card card-ghost';
+        ghost.style.width      = rect.width + 'px';
+        ghost.style.height     = rect.height + 'px';
+        ghost.style.background = card.style.background;
+        ghost.style.left       = rect.left + 'px';
+        ghost.style.top        = rect.top  + 'px';
+        document.body.appendChild(ghost);
+
+        // Hide original in place as a spacer
+        card.classList.add('drag-placeholder');
         handle.setPointerCapture(e.pointerId);
 
+        var dragOverCard = null;
+
         function onMove(e) {
-          if (!draggingCard) return;
-          var list = document.getElementById('goals-list');
-          var cards = Array.from(list.querySelectorAll('.card:not(.dragging)'));
-          var target = null;
-          var insertBefore = true;
+          // Move ghost with pointer
+          ghost.style.left = (e.clientX - offsetX) + 'px';
+          ghost.style.top  = (e.clientY - offsetY) + 'px';
+
+          // Find which card to insert before/after
+          var cards = Array.from(list.querySelectorAll('.card:not(.drag-placeholder)'));
+          var target = null, insertBefore = true;
           cards.forEach(function(c) {
-            var rect = c.getBoundingClientRect();
-            if (e.clientY >= rect.top && e.clientY < rect.bottom) {
+            var r = c.getBoundingClientRect();
+            if (e.clientY >= r.top && e.clientY < r.bottom) {
               target = c;
-              insertBefore = e.clientY < rect.top + rect.height / 2;
+              insertBefore = e.clientY < r.top + r.height / 2;
             }
           });
-          if (dragOverCard) {
-            dragOverCard.classList.remove('drag-over-above', 'drag-over-below');
-          }
-          if (target) {
-            dragOverCard = target;
-            target.classList.add(insertBefore ? 'drag-over-above' : 'drag-over-below');
-          } else {
-            dragOverCard = null;
-          }
+          if (dragOverCard) dragOverCard.classList.remove('drag-over-above', 'drag-over-below');
+          dragOverCard = target;
+          if (target) target.classList.add(insertBefore ? 'drag-over-above' : 'drag-over-below');
         }
 
         function onUp() {
-          if (!draggingCard) return;
-          draggingCard.classList.remove('dragging');
+          ghost.remove();
+          card.classList.remove('drag-placeholder');
+
           if (dragOverCard) {
-            var list = document.getElementById('goals-list');
-            var cards = Array.from(list.querySelectorAll('.card'));
-            var draggingIdx = cards.indexOf(draggingCard);
-            var targetIdx   = cards.indexOf(dragOverCard);
             var above = dragOverCard.classList.contains('drag-over-above');
             dragOverCard.classList.remove('drag-over-above', 'drag-over-below');
-            if (above) {
-              list.insertBefore(draggingCard, dragOverCard);
-            } else {
-              list.insertBefore(draggingCard, dragOverCard.nextSibling);
-            }
-            // Sync goals array to new DOM order
-            var newCards = Array.from(list.querySelectorAll('.card'));
-            goals = newCards.map(function(c) {
-              return goals.find(function(g) { return g.id === c.dataset.id; });
-            }).filter(Boolean);
-            save(goals);
+            if (above) list.insertBefore(card, dragOverCard);
+            else        list.insertBefore(card, dragOverCard.nextSibling);
           }
-          draggingCard = null;
-          dragOverCard = null;
+
+          // Sync goals array to new DOM order
+          var newCards = Array.from(list.querySelectorAll('.card'));
+          goals = newCards.map(function(c) {
+            return goals.find(function(g) { return g.id === c.dataset.id; });
+          }).filter(Boolean);
+          save(goals);
+
           handle.removeEventListener('pointermove', onMove);
           handle.removeEventListener('pointerup', onUp);
         }
