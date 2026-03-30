@@ -161,9 +161,9 @@
     .ctx-overlay { position: fixed; inset: 0; z-index: 199; display: none; }
     .ctx-overlay.open { display: block; }
     .ctx-handle { width: 40px; height: 4px; border-radius: 2px; background: var(--border); margin: 14px auto 10px; cursor: grab; padding: 10px 40px; box-sizing: content-box; background-clip: content-box; touch-action: none; }
-    .ctx-item { display: flex; align-items: center; gap: 10px; padding: 13px 14px; border-radius: 12px; cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: background 0.1s; }
-    .ctx-item:active { background: var(--surface2); }
-    .ctx-item.danger { color: #c0392b; }
+    .ctx-item { display: flex; align-items: center; padding: 16px 18px; border-radius: var(--radius); cursor: pointer; font-size: 14px; font-weight: 800; letter-spacing: 0.02em; text-transform: uppercase; color: #000; transition: opacity 0.1s; margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+    .ctx-item:active { opacity: 0.75; }
+    .ctx-item.danger { color: rgba(0,0,0,0.85); background: #E8B4B0 !important; }
 
     /* ── History screen ── */
     #history-overlay { position: fixed; inset: 0; z-index: 150; display: flex; flex-direction: column; justify-content: flex-end; opacity: 0; pointer-events: none; transition: opacity 0.25s; }
@@ -272,17 +272,17 @@
   <!-- User menu dropdown -->
   <div id="user-menu">
     <div class="user-menu-name" id="user-menu-name">Signed in</div>
-    <div class="user-menu-item danger" id="btn-signout">🚪 &nbsp;Sign out</div>
+    <div class="user-menu-item danger" id="btn-signout">Sign out</div>
   </div>
 
   <!-- Context menu -->
   <div class="ctx-overlay" id="ctx-overlay"></div>
   <div class="ctx-menu" id="ctx-menu">
     <div class="ctx-handle" id="ctx-handle"></div>
-    <div class="ctx-item" id="ctx-history">📊 &nbsp;View history</div>
-    <div class="ctx-item" id="ctx-edit">✏️ &nbsp;Edit goal</div>
-    <div class="ctx-item" id="ctx-reset">🔄 &nbsp;Reset progress</div>
-    <div class="ctx-item danger" id="ctx-delete">🗑️ &nbsp;Delete goal</div>
+    <div class="ctx-item" id="ctx-history" style="background:#A9BBAF">View history</div>
+    <div class="ctx-item" id="ctx-edit" style="background:#BABAC6">Edit goal</div>
+    <div class="ctx-item" id="ctx-reset" style="background:#BCBCBC">Reset progress</div>
+    <div class="ctx-item danger" id="ctx-delete">Delete goal</div>
   </div>
 
   <!-- History screen -->
