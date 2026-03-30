@@ -914,27 +914,44 @@
 
   // ── Swipe-to-dismiss for modal and history sheet ────────────────────────
   function makeSwipeDismissible(handleEl, sheetEl, closeFn) {
+    handleEl.style.touchAction = 'none';
     handleEl.addEventListener('pointerdown', function(e) {
+      e.preventDefault();
       var startY = e.clientY;
+      var lastDy = 0;
       handleEl.setPointerCapture(e.pointerId);
       sheetEl.style.transition = 'none';
 
       function onMove(e) {
-        var dy = Math.max(0, e.clientY - startY);
-        sheetEl.style.transform = 'translateY(' + dy + 'px)';
+        e.preventDefault();
+        lastDy = Math.max(0, e.clientY - startY);
+        sheetEl.style.transform = 'translateY(' + lastDy + 'px)';
       }
-      function onUp(e) {
-        sheetEl.style.transition = '';
-        var dy = Math.max(0, e.clientY - startY);
-        if (dy > 120) {
-          sheetEl.style.transform = '';
-          closeFn();
-        } else {
-          sheetEl.style.transform = '';
-        }
+
+      function onUp() {
         handleEl.removeEventListener('pointermove', onMove);
         handleEl.removeEventListener('pointerup', onUp);
+
+        if (lastDy > 120) {
+          // Slide sheet out then trigger close
+          sheetEl.style.transition = 'transform 0.28s cubic-bezier(0.4,0,1,1)';
+          sheetEl.style.transform  = 'translateY(110%)';
+          setTimeout(function() {
+            sheetEl.style.transition = '';
+            sheetEl.style.transform  = '';
+            closeFn();
+          }, 280);
+        } else {
+          // Snap back up
+          sheetEl.style.transition = 'transform 0.35s cubic-bezier(0.34,1.4,0.64,1)';
+          sheetEl.style.transform  = 'translateY(0)';
+          setTimeout(function() {
+            sheetEl.style.transition = '';
+            sheetEl.style.transform  = '';
+          }, 360);
+        }
       }
+
       handleEl.addEventListener('pointermove', onMove);
       handleEl.addEventListener('pointerup', onUp);
     });
