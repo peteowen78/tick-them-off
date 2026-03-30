@@ -583,7 +583,14 @@
   }
 
   function daysLeft(period, start) {
-    var days = Math.ceil((periodEnd(period, start) - Date.now()) / 86400000);
+    var msLeft = periodEnd(period, start) - Date.now();
+    if (period === 'daily') {
+      var hours = Math.ceil(msLeft / 3600000);
+      if (hours <= 0) return 'ends soon';
+      if (hours === 1) return '1 hour left';
+      return hours + ' hours left';
+    }
+    var days = Math.ceil(msLeft / 86400000);
     if (days <= 0) return 'ends today';
     if (days === 1) return '1 day left';
     return days + ' days left';
