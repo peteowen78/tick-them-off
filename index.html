@@ -156,8 +156,11 @@
     .user-menu-item.danger { color: #c0392b; }
 
     /* ── Context menu ── */
-    .ctx-menu { position: fixed; background: var(--surface); border-radius: 16px; padding: 6px; min-width: 170px; z-index: 200; box-shadow: 0 8px 32px rgba(0,0,0,0.12); opacity: 0; pointer-events: none; transform: scale(0.9); transform-origin: top right; transition: opacity 0.15s, transform 0.15s; }
-    .ctx-menu.open { opacity: 1; pointer-events: all; transform: scale(1); }
+    .ctx-menu { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-radius: 24px 24px 0 0; padding: 0 8px 44px; z-index: 200; box-shadow: 0 -4px 32px rgba(0,0,0,0.1); transform: translateY(100%); pointer-events: none; transition: transform 0.35s cubic-bezier(0.34,1.05,0.64,1); }
+    .ctx-menu.open { transform: translateY(0); pointer-events: all; }
+    .ctx-overlay { position: fixed; inset: 0; z-index: 199; display: none; }
+    .ctx-overlay.open { display: block; }
+    .ctx-handle { width: 40px; height: 4px; border-radius: 2px; background: var(--border); margin: 14px auto 10px; cursor: grab; padding: 10px 40px; box-sizing: content-box; background-clip: content-box; touch-action: none; }
     .ctx-item { display: flex; align-items: center; gap: 10px; padding: 13px 14px; border-radius: 12px; cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: background 0.1s; }
     .ctx-item:active { background: var(--surface2); }
     .ctx-item.danger { color: #c0392b; }
@@ -273,7 +276,9 @@
   </div>
 
   <!-- Context menu -->
+  <div class="ctx-overlay" id="ctx-overlay"></div>
   <div class="ctx-menu" id="ctx-menu">
+    <div class="ctx-handle" id="ctx-handle"></div>
     <div class="ctx-item" id="ctx-history">📊 &nbsp;View history</div>
     <div class="ctx-item" id="ctx-edit">✏️ &nbsp;Edit goal</div>
     <div class="ctx-item" id="ctx-reset">🔄 &nbsp;Reset progress</div>
@@ -1008,16 +1013,22 @@
   function openCtxMenu(e, id) {
     e.stopPropagation();
     ctxId = id;
-    var menu = document.getElementById('ctx-menu');
-    var rect = e.currentTarget.getBoundingClientRect();
-    menu.style.top   = (rect.bottom + 6) + 'px';
-    menu.style.right = (window.innerWidth - rect.right) + 'px';
-    menu.classList.add('open');
+    document.getElementById('ctx-menu').classList.add('open');
+    document.getElementById('ctx-overlay').classList.add('open');
   }
 
-  function closeCtxMenu() { document.getElementById('ctx-menu').classList.remove('open'); ctxId = null; }
+  function closeCtxMenu() {
+    document.getElementById('ctx-menu').classList.remove('open');
+    document.getElementById('ctx-overlay').classList.remove('open');
+    ctxId = null;
+  }
 
-  document.addEventListener('click', function() { closeCtxMenu(); });
+  document.getElementById('ctx-overlay').addEventListener('click', closeCtxMenu);
+  makeSwipeDismissible(
+    document.getElementById('ctx-handle'),
+    document.getElementById('ctx-menu'),
+    closeCtxMenu
+  );
 
   // ── History ────────────────────────────────────────────────────────────────
   function openHistory(id) {
