@@ -1076,11 +1076,12 @@
     document.getElementById('history-overlay').classList.remove('open');
   });
 
-  document.getElementById('ctx-history').addEventListener('click', function() { if (ctxId) openHistory(ctxId); });
-  document.getElementById('ctx-edit').addEventListener('click', function() { if (ctxId) openModal(ctxId); });
+  document.getElementById('ctx-history').addEventListener('click', function() { if (ctxId) { closeCtxMenu(); openHistory(ctxId); } });
+  document.getElementById('ctx-edit').addEventListener('click', function() { if (ctxId) { closeCtxMenu(); openModal(ctxId); } });
 
   document.getElementById('ctx-reset').addEventListener('click', function() {
     if (!ctxId) return;
+    closeCtxMenu();
     var g = goals.find(function(x) { return x.id === ctxId; });
     if (!g) return;
     g.progress = 0; g.periodStart = periodStart(g.period);
@@ -1089,10 +1090,12 @@
 
   document.getElementById('ctx-delete').addEventListener('click', function() {
     if (!ctxId) return;
-    var g = goals.find(function(x) { return x.id === ctxId; });
+    var id = ctxId;
+    closeCtxMenu();
+    var g = goals.find(function(x) { return x.id === id; });
     if (!g) return;
     if (confirm('Delete "' + g.name + '"?')) {
-      goals = goals.filter(function(x) { return x.id !== ctxId; });
+      goals = goals.filter(function(x) { return x.id !== id; });
       save(goals); render();
     }
   });
