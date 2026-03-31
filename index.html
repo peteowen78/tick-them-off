@@ -1076,8 +1076,8 @@
     document.getElementById('history-overlay').classList.remove('open');
   });
 
-  document.getElementById('ctx-history').addEventListener('click', function() { if (ctxId) { closeCtxMenu(); openHistory(ctxId); } });
-  document.getElementById('ctx-edit').addEventListener('click', function() { if (ctxId) { closeCtxMenu(); openModal(ctxId); } });
+  document.getElementById('ctx-history').addEventListener('click', function() { if (ctxId) { var id = ctxId; closeCtxMenu(); openHistory(id); } });
+  document.getElementById('ctx-edit').addEventListener('click', function() { if (ctxId) { var id = ctxId; closeCtxMenu(); openModal(id); } });
 
   document.getElementById('ctx-reset').addEventListener('click', function() {
     if (!ctxId) return;
